@@ -5,7 +5,6 @@ import './style.css';
 import {
   ensureFilterBanner,
   markPluginReady,
-  reduceRightColumn
 } from '../../features/content-foundation/dom';
 import { replaceAuthorSearchLinks } from '../../features/content-foundation/link-rewrite';
 import {
@@ -13,6 +12,9 @@ import {
   getFilteredUserName,
   saveScrollPosition
 } from '../../features/content-foundation/page-state';
+import { enhanceLegacyForumPage } from '../../features/forum/legacy-compat';
+import { getBrowser } from '../../utils/browser-api';
+import { loadUserGroupLookup } from '../../utils/groups';
 import { initializeSettingsDocument } from '../../utils/settings/storage';
 
 const supportedMatches = ['*://*.yaplakal.com/*', '*://*.yap.ru/*'];
@@ -25,16 +27,13 @@ export default defineContentScript({
       legacyStorage: window.localStorage
     });
     const filteredUserName = getFilteredUserName(window.localStorage);
+    const [browser, userGroups] = await Promise.all([getBrowser(), loadUserGroupLookup()]);
 
     document.documentElement.dataset.yapLampExtension = 'active';
     replaceAuthorSearchLinks(document);
 
     if (filteredUserName != null) {
       ensureFilterBanner(filteredUserName, window.localStorage, document);
-    }
-
-    if (settingsDocument.settings.reduce_ad_block) {
-      reduceRightColumn(document);
     }
 
     window.addEventListener('beforeunload', () => {
@@ -48,6 +47,16 @@ export default defineContentScript({
       window.localStorage,
       navigationEntry?.type
     );
+
+    await enhanceLegacyForumPage({
+      settings: settingsDocument.settings,
+      userGroups,
+      filteredUserName,
+      runtime: {
+        browser,
+        manifest: browser.runtime.getManifest()
+      }
+    });
 
     markPluginReady(document);
 

@@ -103,8 +103,10 @@ npm run package:safari
 
 Release behavior:
 
-- push a tag like `v1.2.3` → create draft GitHub Release + run Chrome / Firefox / Edge submit jobs
+- push a tag like `v0.1.0` or `v1.2.3` → create draft GitHub Release + run Chrome / Firefox / Edge submit jobs
 - run `submit-stores.yml` manually → choose `target` (`all`, `chrome`, `firefox`, `edge`) and `dry_run`
+
+> Plain tags like `0.1.0` do not trigger release workflows. Use the `v*` format.
 
 Store submission requires GitHub **Environments** and secrets configured in repository settings:
 
@@ -263,7 +265,7 @@ Recommended release hardening:
 3. keep `.env.submit` local only
 4. mirror those values into `chrome-store`, `firefox-store`, and `edge-store`
 5. test `submit-stores.yml` with `dry_run=true`
-6. publish with a `v*` tag once credentials are confirmed
+6. publish with a `v*` tag such as `v0.1.0` once credentials are confirmed
 
 ## Project structure
 

@@ -46,6 +46,7 @@ For Firefox packaging and release work, remember that the generated `sources.zip
 - Create distributable archives: `npm run zip`
 - Create one browser archive: `npm run zip:chrome|firefox|edge|opera`
 - Safari handoff packaging on macOS: `npm run build:safari` then `npm run package:safari`
+- Release/store automation tag format: `vX.Y.Z` (for example `v0.1.0`); plain `X.Y.Z` tags do not trigger GitHub release/store workflows
 
 # Testing expectations
 

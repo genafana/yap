@@ -2,6 +2,7 @@ import './style.css';
 
 import { getBrowser } from '../../utils/browser-api';
 import { localizeDocument, type MessageGetter } from '../../utils/i18n';
+import { resolveSelectOptionLabel } from './select-labels';
 import {
   settingDefinitions,
   settingKeys,
@@ -64,7 +65,7 @@ function createInput(key: keyof ExtensionSettings, value: ExtensionSettings[type
       definition.values?.forEach((optionValue, index) => {
         const option = document.createElement('option');
         option.value = String(optionValue);
-        option.textContent = localized.valueLabels[index] ?? String(optionValue);
+        option.textContent = resolveSelectOptionLabel(localized.valueLabels[index], optionValue);
         option.selected = optionValue === value;
         select.append(option);
       });

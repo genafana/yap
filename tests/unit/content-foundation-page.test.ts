@@ -55,4 +55,3 @@ describe('content foundation page helpers', () => {
     expect(getPostArea(doc)).toEqual({ id: 'Post' });
   });
 });
-

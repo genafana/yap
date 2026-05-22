@@ -25,7 +25,7 @@ window.addEventListener('beforeunload', () => {
     localStorage.setItem('scrollPosition', window.pageYOffset);
 });
 
-// Legacy - парсим нестрогий json
+// Legacy note - parse loose JSON
 function parseLooseJSON(text) {
   return JSON.parse(qq = text
     .replace(/\/\/.*$/gm, '')             // Комментарии //
@@ -34,11 +34,11 @@ function parseLooseJSON(text) {
     .replace(/"\s*"/g, '')                // Склейка длинных строк. Пример: "очень " "длинная " "строка". Части строки можно переносить на новую строку (для удобства)
   );
 }
-// Legacy - парсим нестрогий json
+// Legacy note - parse loose JSON
 
 async function initPage() 
 {
-// Legacy. UserGroups: Читаем юзер-группы и инвертируем их в объект юзеров	- begin
+// Legacy UserGroups: read groups and invert them into a user lookup - begin
     USERS = {};
     try {
       const res = await fetch(chrome.runtime.getURL('groups.json'));
@@ -54,7 +54,7 @@ async function initPage()
           }
 		}
     } catch { console.log('Файл юзер-групп отсутствует или содержит невалидный json'); }
-// Legacy. UserGroups: Читаем юзер-группы и инвертируем их в объект юзеров	- end
+// Legacy UserGroups: read groups and invert them into a user lookup - end
 
     await loadConfig();
     await addConfigMenu();
@@ -93,9 +93,9 @@ async function initPage()
             postRank, userStatus, nikname, online, userPic, img, msgDate, href_to_post, 
             nikhref, current_nik_name;
 
-// Legacy. UserGroups: Определяем юзер-группу - begin
+// Legacy UserGroups: detect the user group - begin
         let userGroup = {};
-// Legacy. UserGroups: Определяем юзер-группу - end
+// Legacy UserGroups: detect the user group - end
 
         let rows = entryTabs[i].rows;
         let row = getRow( rows, 'userInfo' );
@@ -119,13 +119,13 @@ async function initPage()
             nikname = row.querySelector('span.normalname') || row.querySelector('span.unreg');
             if(nikname)
             {   
-// Legacy. UserGroups: Игнорируем посты юзеров из игнор-листа - begin
+// Legacy UserGroups: ignore posts from ignored users - begin
                 userGroup = USERS[nikname.innerText.trim()] || {};
                 if (userGroup.ignore) {
 					row.closest('table').style.display = 'none';
                     continue;
                 }
-// Legacy. UserGroups: Игнорируем посты юзеров из игнор-листа - end
+// Legacy UserGroups: ignore posts from ignored users - end
 
                 nikhref = nikname.querySelector('a');
                 if(nikhref)
@@ -285,9 +285,9 @@ async function initPage()
                 let mtch = s.match(/ний:\s.+/)[0].match(/\d+/g);
                 newStatus += (newStatus ? '<br/>' : '') + (mtch && mtch.length ? mtch.join('') : 0) + ' сообщ.';
             }
-// Legacy. UserGroups: Название группы - begin
+// Legacy UserGroups: group label - begin
             if (userGroup.group) newStatus += (newStatus ? '<br/>' : '') + 'Группа: ' + userGroup.group;
-// Legacy. UserGroups: Название группы - end
+// Legacy UserGroups: group label - end
             if(newStatus)
             {
                 userStatus.innerHTML = newStatus;
@@ -344,9 +344,9 @@ async function initPage()
         newCell.style.borderRight = CONFIG.left_col_right_border;
         newCell.style.background = CONFIG.title_bg_color;
 
-// Legacy. UserGroups: Выделение цветом юзеров из групп - begin
+// Legacy UserGroups: highlight users from groups - begin
         if (userGroup.color) newCell.style.background = userGroup.color;
-// Legacy. UserGroups: Выделение цветом юзеров из групп - end
+// Legacy UserGroups: highlight users from groups - end
 
         let userWrapper = document.createElement('div');
         newCell.append(userWrapper);

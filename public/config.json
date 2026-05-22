@@ -1,0 +1,22 @@
+{
+    "left_col_width": "10em",
+    "left_col_right_border": "1px solid silver",
+    "hor_separate_border": "3px solid gainsboro",
+    "user_pic_size": 80,
+    "nik_on_top": true,
+    "show_date_or_age": "age",
+    "self_highlight_bg": "Gainsboro",
+    "self_highlight_border": "1px solid silver",
+    "title_bg_color": "WhiteSmoke",
+    "message_bg_color": "white",
+    "citate_bg_color": "white",
+    "msg_menu_type": "text",
+    "reduce_ad_block": false,
+    "origin_scroll_top": "",
+    "apply_context_menu": true,
+    "privat_mail_type": "avatar_rkm",
+    "response_form": "toggle",
+    "smilies_show_all": "",
+    "smilies_text": "title",
+    "smilies_columns": "2"
+}

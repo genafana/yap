@@ -17,29 +17,24 @@
       </header>
 
       <form id="settings-form" class="card">
-        <label class="field">
-          <span>Enable extension</span>
-          <input id="enabled" type="checkbox" />
-        </label>
-
-        <label class="field">
-          <span>Enable debug mode</span>
-          <input id="debug" type="checkbox" />
-        </label>
-
-        <label class="field">
-          <span>Keep context-menu feature enabled</span>
-          <input id="applyContextMenu" type="checkbox" />
-        </label>
-
-        <label class="field">
-          <span>Show floating debug badge on supported pages</span>
-          <input id="showFloatingBadge" type="checkbox" />
-        </label>
-
         <div class="actions">
-          <button type="submit">Save settings</button>
+          <button type="submit">Сохранить</button>
+          <button id="reset-settings" type="button">Восстановить</button>
+          <button id="export-settings" type="button">Экспортировать</button>
           <span id="save-status" role="status" aria-live="polite"></span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="settings-table">
+            <thead>
+              <tr>
+                <th>Параметр</th>
+                <th>Значение</th>
+                <th>Описание</th>
+              </tr>
+            </thead>
+            <tbody id="settings-table-body"></tbody>
+          </table>
         </div>
       </form>
     </main>

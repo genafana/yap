@@ -22,6 +22,12 @@ export default defineConfig({
     action: {
       default_title: extensionName
     },
+    web_accessible_resources: [
+      {
+        resources: ['config.json', 'groups.json'],
+        matches: hostPermissions
+      }
+    ],
     browser_specific_settings: {
       gecko: {
         id: 'lamp-design@yaplakal.local',
@@ -36,6 +42,7 @@ export default defineConfig({
     includeSources: [
       'README.md',
       'SOURCE_CODE_REVIEW.md',
+      'public/**',
       'scripts/**',
       'src/**',
       'tests/**',

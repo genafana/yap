@@ -1,0 +1,44 @@
+{
+  "Muted": {
+    "ignore": true,
+    "users": [
+      "User1"
+    ]
+  },
+  "Developers": {
+    "color": "Khaki",
+    "users": [
+      "User2"
+    ]
+  },
+  "Testers": {
+    "color": "Moccasin",
+    "users": [
+      "User3"
+    ]
+  },
+  "perfect": {
+    "color": "Lime",
+    "users": [
+      "User4"
+    ]
+  },
+  "bad": {
+    "color": "Salmon",
+    "users": [
+      "User5"
+    ]
+  },
+  "good": {
+    "color": "GreenYellow",
+    "users": [
+      "User6"
+    ]
+  },
+  "sad": {
+    "color": "Red",
+    "users": [
+      "User7"
+    ]
+  }
+}

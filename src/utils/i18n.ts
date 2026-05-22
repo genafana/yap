@@ -20,13 +20,6 @@ export function localizeDocument(doc: Document, getMessage: MessageGetter): void
     }
   });
 
-  doc.querySelectorAll<HTMLElement>('[data-i18n-html]').forEach((element) => {
-    const key = element.dataset.i18nHtml;
-    if (key) {
-      element.innerHTML = getMessage(key);
-    }
-  });
-
   doc.querySelectorAll<HTMLElement>('[data-i18n-title]').forEach((element) => {
     const key = element.dataset.i18nTitle;
     if (key) {

@@ -11,7 +11,11 @@ export function replaceAuthorSearchLinks(doc: Document = document): void {
 
   const cells = doc.querySelectorAll<HTMLTableCellElement>('td.post1');
   cells.forEach((cell) => {
-    cell.innerHTML = normalizeAuthorSearchCellHtml(cell.innerHTML);
+    const walker = doc.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+    let current = walker.nextNode();
+    while (current != null) {
+      current.textContent = normalizeAuthorSearchCellHtml(current.textContent ?? '');
+      current = walker.nextNode();
+    }
   });
 }
-

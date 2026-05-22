@@ -55,6 +55,13 @@ export function normalizeMessageContent(html: string): string {
     .replace(/(<!--ec\d-->)(?:\s*<br\s*\/?>)/gi, '$1');
 }
 
+function replaceElementHtml(element: HTMLElement, html: string): void {
+  const parser = new DOMParser();
+  const parsed = parser.parseFromString(`<body>${html}</body>`, 'text/html');
+  const nodes = Array.from(parsed.body.childNodes).map((node) => document.importNode(node, true));
+  element.replaceChildren(...nodes);
+}
+
 export function extractCitationAuthor(text: string): string | null {
   const match = text.match(/\((.+?) @/);
   return match?.[1]?.trim() ?? null;
@@ -230,14 +237,14 @@ function transformEntryTable(
     online.classList.add('user-online');
   } else {
     online = document.createElement('span');
-    online.innerHTML = '👤';
+    online.textContent = '👤';
   }
 
   const profileAnchor = userNameElement?.querySelector<HTMLAnchorElement>('a') ?? null;
   if (userNameElement != null && profileAnchor != null) {
     userNameElement.title = profileAnchor.title;
     userNameElement.innerText = readElementText(profileAnchor).trim();
-    if (profileAnchor.innerHTML.startsWith('<s>')) {
+    if (profileAnchor.querySelector('s') != null) {
       userNameElement.style.textDecoration = 'line-through';
     }
     userNameElement.style.paddingRight = '.5em';
@@ -287,7 +294,7 @@ function transformEntryTable(
     const dateSpan = document.createElement('span');
     dateSpan.innerText = readElementText(messageDateAnchor);
     dateSpan.classList.add('msg-date');
-    messageDateAnchor.innerHTML = dateSpan.outerHTML;
+    messageDateAnchor.replaceChildren(dateSpan);
   }
 
   let ratingValue = userInfoRow.querySelector<HTMLElement>('div.rating-value');
@@ -315,7 +322,7 @@ function transformEntryTable(
     partialQuoteLink.addEventListener('click', (event) => insertPartialQuote(event, getMessage));
 
     hrefToPost = document.createElement('span');
-    hrefToPost.innerHTML = '▼';
+    hrefToPost.textContent = '▼';
     hrefToPost.classList.add('href-to-post');
     hrefToPost.style.display = 'none';
     hrefToPost.style.paddingLeft = '.25em';
@@ -340,7 +347,7 @@ function transformEntryTable(
   const postRank = userInfoRow.querySelector<HTMLElement>('div[id^="p_rank"]');
   const userStatus = userInfoRow.querySelector<HTMLElement>('div.postdetails');
   if (userStatus != null) {
-    userStatus.innerHTML = buildUserStatus(userStatus, userNameElement, userGroup, settings, getMessage);
+    replaceElementLines(userStatus, buildUserStatus(userStatus, userNameElement, userGroup, settings, getMessage));
   }
 
   const postHeaderRow = getRow(rows, 'postHeader') as HTMLTableRowElement | null;
@@ -358,7 +365,7 @@ function transformEntryTable(
       /QuoteE?Begin|QuoteE?End/.test(messageCell.innerHTML) ||
       /(?:\s*<br\s*\/?>\s*){3,}/.test(messageCell.innerHTML)
     ) {
-      messageCell.innerHTML = normalizeMessageContent(messageCell.innerHTML);
+      replaceElementHtml(messageCell, normalizeMessageContent(messageCell.innerHTML));
     }
   }
 
@@ -531,41 +538,52 @@ function buildUserStatus(
   userGroup: UserGroupEntry | undefined,
   settings: ExtensionSettings,
   getMessage: MessageGetter
-): string {
-  let newStatus = '';
+): string[] {
+  const lines: string[] = [];
   const statusHtml = userStatus.innerHTML || '';
   const infoTitle = userNameElement?.getAttribute('title') ?? '';
 
   const rankMatch = statusHtml.match(/.+•/);
   if (rankMatch != null) {
-    newStatus = rankMatch[0].replace('•', '').trim();
+    lines.push(rankMatch[0].replace('•', '').trim());
   }
 
   if (settings.show_date_or_age === 'age') {
     const ageMatch = statusHtml.match(/сайте\s\d+.+/);
     if (ageMatch != null) {
-      newStatus += `${newStatus ? '<br/>' : ''}${getMessage('user_status_on_site')}: ${ageMatch[0].substring(6).trim()}`;
+      lines.push(`${getMessage('user_status_on_site')}: ${ageMatch[0].substring(6).trim()}`);
     }
   }
 
   if (settings.show_date_or_age === 'date') {
     const dateMatch = infoTitle.match(/\d{1,2}\.\d{2}\.(\d{2}|\d{4})/);
     if (dateMatch != null) {
-      newStatus += `${newStatus ? '<br/>' : ''}${dateMatch[0]}`;
+      lines.push(dateMatch[0]);
     }
   }
 
   const messagesMatch = infoTitle.match(/ний:\s.+/);
   if (messagesMatch != null) {
     const digits = messagesMatch[0].match(/\d+/g);
-    newStatus += `${newStatus ? '<br/>' : ''}${digits?.join('') ?? 0} ${getMessage('user_status_posts_short')}`;
+    lines.push(`${digits?.join('') ?? 0} ${getMessage('user_status_posts_short')}`);
   }
 
   if (userGroup?.group != null) {
-    newStatus += `${newStatus ? '<br/>' : ''}${getMessage('user_status_group')}: ${userGroup.group}`;
+    lines.push(`${getMessage('user_status_group')}: ${userGroup.group}`);
   }
 
-  return newStatus;
+  return lines;
+}
+
+function replaceElementLines(element: HTMLElement, lines: string[]): void {
+  const nodes: Node[] = [];
+  lines.forEach((line, index) => {
+    if (index > 0) {
+      nodes.push(document.createElement('br'));
+    }
+    nodes.push(document.createTextNode(line));
+  });
+  element.replaceChildren(...nodes);
 }
 
 function readCurrentUser(): string | null {
@@ -674,7 +692,7 @@ function addConfigMenu(runtime: RuntimeBridge, getMessage: MessageGetter): void 
   configMenu.style.paddingLeft = '.5em';
   configMenu.style.color = 'Honeydew';
   configMenu.style.cursor = 'pointer';
-  configMenu.innerHTML = `&#x2699;&#xFE0F; ${getMessage('config_menu_version', runtime.manifest.version)}`;
+  configMenu.textContent = `⚙️ ${getMessage('config_menu_version', runtime.manifest.version)}`;
   configMenu.addEventListener('click', () => {
     void runtime.browser.runtime.openOptionsPage();
   });
@@ -706,12 +724,18 @@ function setupResponseFormToggle(
     if (firstCellIsEmpty) {
       buttonCell.style.width = '50%';
     }
-    buttonCell.innerHTML = `<button id="toggleFBO" type="button">${getMessage('fbo_hide')}</button>`;
+    const toggleButton = document.createElement('button');
+    toggleButton.id = 'toggleFBO';
+    toggleButton.type = 'button';
+    toggleButton.textContent = getMessage('fbo_hide');
+    buttonCell.append(toggleButton);
   } else {
-    replier.insertAdjacentHTML(
-      'beforebegin',
-      `<button id="toggleFBO" type="button" style="margin:10px 0">${getMessage('fbo_hide')}</button>`
-    );
+    const toggleButton = document.createElement('button');
+    toggleButton.id = 'toggleFBO';
+    toggleButton.type = 'button';
+    toggleButton.textContent = getMessage('fbo_hide');
+    toggleButton.style.margin = '10px 0';
+    replier.parentNode?.insertBefore(toggleButton, replier);
   }
 
   const toggleButton = document.getElementById('toggleFBO');
@@ -920,7 +944,11 @@ function parseQuoteTable(table: HTMLTableElement): string {
   const content =
     contentCell == null
       ? ''
-      : htmlToBBCode(document.createRange().createContextualFragment(contentCell.innerHTML))
+      : (() => {
+          const fragment = document.createDocumentFragment();
+          fragment.append(contentCell.cloneNode(true));
+          return htmlToBBCode(fragment);
+        })()
           .replace(/<!--Quote(E|B)[^>]*-->/g, '')
           .trim();
 
@@ -981,8 +1009,65 @@ function addReplyUploadFeature(getMessage: MessageGetter): void {
   const cell = row.insertCell();
   cell.style.background = 'whitesmoke';
   cell.style.borderTop = '1px solid gainsboro';
-  cell.innerHTML =
-    `<div class="reply-form"><div class="reply-form-synteticleft-block"></div><div class="reply-form-textarea-wrap"><b style="padding-right:.5em;">${getMessage('reply_upload_image')}</b><input type="hidden" name="MAX_FILE_SIZE" value="3145728"><input class="textinput" type="file" size="30" name="FILE_UPLOAD"><br><input type="checkbox" name="enabletag" id="enabletag" class="checkbox" value="1" checked="checked"><label for="enabletag"><strong>${getMessage('reply_enable_logo_prefix')}</strong> ${getMessage('reply_enable_logo')}</label></div><div class="reply-form-right-block" style="vertical-align:middle;text-align:center;"><img id="imghaha_up" src="//www.yaplakal.com/html/emoticons/brake.gif"><br/><img id="imghaha_bot" src="//www.yaplakal.com/html/emoticons/rulez.gif"></div></div>`;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'reply-form';
+
+  const leftBlock = document.createElement('div');
+  leftBlock.className = 'reply-form-synteticleft-block';
+
+  const textareaWrap = document.createElement('div');
+  textareaWrap.className = 'reply-form-textarea-wrap';
+
+  const title = document.createElement('b');
+  title.style.paddingRight = '.5em';
+  title.textContent = getMessage('reply_upload_image');
+
+  const maxFileSize = document.createElement('input');
+  maxFileSize.type = 'hidden';
+  maxFileSize.name = 'MAX_FILE_SIZE';
+  maxFileSize.value = '3145728';
+
+  const fileInput = document.createElement('input');
+  fileInput.className = 'textinput';
+  fileInput.type = 'file';
+  fileInput.size = 30;
+  fileInput.name = 'FILE_UPLOAD';
+
+  const lineBreak = document.createElement('br');
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.name = 'enabletag';
+  checkbox.id = 'enabletag';
+  checkbox.className = 'checkbox';
+  checkbox.value = '1';
+  checkbox.checked = true;
+
+  const checkboxLabel = document.createElement('label');
+  checkboxLabel.htmlFor = 'enabletag';
+
+  const checkboxPrefix = document.createElement('strong');
+  checkboxPrefix.textContent = getMessage('reply_enable_logo_prefix');
+
+  checkboxLabel.append(checkboxPrefix, document.createTextNode(` ${getMessage('reply_enable_logo')}`));
+  textareaWrap.append(title, maxFileSize, fileInput, lineBreak, checkbox, checkboxLabel);
+
+  const rightBlock = document.createElement('div');
+  rightBlock.className = 'reply-form-right-block';
+  rightBlock.style.verticalAlign = 'middle';
+  rightBlock.style.textAlign = 'center';
+
+  const topImage = document.createElement('img');
+  topImage.id = 'imghaha_up';
+  topImage.src = '//www.yaplakal.com/html/emoticons/brake.gif';
+
+  const bottomImage = document.createElement('img');
+  bottomImage.id = 'imghaha_bot';
+  bottomImage.src = '//www.yaplakal.com/html/emoticons/rulez.gif';
+
+  rightBlock.append(topImage, document.createElement('br'), bottomImage);
+  wrapper.append(leftBlock, textareaWrap, rightBlock);
+  cell.append(wrapper);
 
   const textarea = document.querySelector<HTMLTextAreaElement>('textarea#Post');
   textarea?.addEventListener('click', hideHaha);
@@ -1141,7 +1226,7 @@ function findSmiliesLayout(settings: ExtensionSettings):
     return null;
   }
 
-  element.innerHTML = '';
+  element.replaceChildren();
   element.style.verticalAlign = 'top';
   element.style.textAlign = 'left';
 
@@ -1184,7 +1269,7 @@ function showToastMessage(text: string): void {
     document.body.append(toast);
   }
 
-  toast.innerHTML = text;
+  toast.textContent = text;
   toast.classList.add('show');
   const timer = window.setTimeout(() => {
     toast?.classList.remove('show');

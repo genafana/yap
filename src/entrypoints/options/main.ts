@@ -101,7 +101,7 @@ function renderForm(settings: ExtensionSettings): void {
     valueCell.append(createInput(key, settings[key]));
 
     const descriptionCell = document.createElement('td');
-    descriptionCell.innerHTML = localized.description || getMessage('options_no_description');
+    descriptionCell.textContent = localized.description || getMessage('options_no_description');
 
     row.append(nameCell, valueCell, descriptionCell);
     tableBody.append(row);

@@ -25,6 +25,7 @@ Before changing code:
 After changing code, always run:
 
 ```bash
+npm run lint
 npm run typecheck
 npm run test:unit
 npm run build
@@ -39,6 +40,7 @@ For Firefox packaging and release work, remember that the generated `sources.zip
 - Install dependencies: `npm install`
 - Local dev: `npm run dev`
 - Browser-specific dev: `npm run dev:firefox`, `npm run dev:edge`, `npm run dev:opera`
+- Lint: `npm run lint`
 - Build all targets: `npm run build`
 - Build one target: `npm run build:chrome|firefox|edge|opera|safari`
 - Create distributable archives: `npm run zip`
@@ -60,6 +62,7 @@ If a change is documentation-only, code tests are not required.
 # Code and review principles
 
 - Use TypeScript consistently; avoid `any` unless there is no safer option.
+- Follow `.editorconfig` and keep ESLint clean instead of relying on ad-hoc formatting fixes.
 - Prefer explicit data normalization and compatibility helpers over ad-hoc DOM hacks.
 - Do not silently swallow errors.
 - Do not commit secrets, tokens, certificates, or store credentials.
@@ -72,7 +75,7 @@ When reviewing a change, check:
 1. Is the behavior still correct for the existing extension feature set?
 2. Are settings persistence and bundled resources still handled through the existing utilities?
 3. Are tests added/updated where logic changed?
-4. Were `typecheck`, `test:unit`, and `build` run?
+4. Were `lint`, `typecheck`, `test:unit`, and `build` run?
 5. Did the change avoid unrelated refactors and historical POC leakage into release artifacts?
 
 # Documentation

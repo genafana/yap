@@ -233,7 +233,7 @@ function transformEntryTable(
     online.innerHTML = '👤';
   }
 
-  let profileAnchor = userNameElement?.querySelector<HTMLAnchorElement>('a') ?? null;
+  const profileAnchor = userNameElement?.querySelector<HTMLAnchorElement>('a') ?? null;
   if (userNameElement != null && profileAnchor != null) {
     userNameElement.title = profileAnchor.title;
     userNameElement.innerText = readElementText(profileAnchor).trim();
@@ -247,7 +247,7 @@ function transformEntryTable(
     }
   }
 
-  let userPic =
+  const userPic =
     userInfoRow.querySelector<HTMLElement>('a') ??
     userInfoRow.querySelector<HTMLElement>('div.extended') ??
     userInfoRow.querySelector<HTMLElement>('div.comment-left');
@@ -1127,21 +1127,15 @@ function renderSmilesTable(settings: ExtensionSettings, getMessage: MessageGette
 function findSmiliesLayout(settings: ExtensionSettings):
   | { element: HTMLElement; isSimpleForm: boolean }
   | null {
-  let element: HTMLElement | null = null;
-  let isSimpleForm = true;
   const leftBlocks = document.querySelectorAll<HTMLElement>('div.reply-form-left-block');
+  const isSimpleForm = leftBlocks.length > 0 && document.querySelector('div.bbcode') == null;
 
-  if (leftBlocks.length > 0) {
-    isSimpleForm = document.querySelector('div.bbcode') == null;
-    if (isSimpleForm) {
-      element = leftBlocks[0] ?? null;
-    } else {
-      element = leftBlocks[1] ?? null;
-    }
-  } else {
-    element = document.querySelector<HTMLElement>('td.pformleft');
-    isSimpleForm = false;
-  }
+  const element =
+    leftBlocks.length > 0
+      ? isSimpleForm
+        ? (leftBlocks[0] ?? null)
+        : (leftBlocks[1] ?? null)
+      : document.querySelector<HTMLElement>('td.pformleft');
 
   if (element == null) {
     return null;

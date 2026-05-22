@@ -14,6 +14,8 @@
     "dev:firefox": "wxt -b firefox",
     "dev:edge": "wxt -b edge",
     "dev:opera": "wxt -b opera",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "build": "node ./scripts/build-all.mjs",
     "build:chrome": "wxt build -b chrome",
     "build:firefox": "wxt build -b firefox",
@@ -35,8 +37,12 @@
     "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.1.0",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0",
     "typescript": "^5.8.3",
+    "typescript-eslint": "^8.59.4",
     "vitest": "^3.2.4",
     "wxt": "^0.20.26"
   }

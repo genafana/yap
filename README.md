@@ -20,6 +20,7 @@ Cross-browser WebExtension project for YAP UI customization.
 - **WXT** — manifest generation, browser targets, build and zip tooling
 - **TypeScript** — typed source code
 - **webextension-polyfill** — browser API compatibility layer
+- **ESLint** — repository linting baseline
 - **Vitest** — unit test baseline
 
 ## Supported browser targets
@@ -95,7 +96,7 @@ npm run package:safari
 
 ## GitHub Actions release flow
 
-- `ci.yml` — run `npm ci`, typecheck, unit tests, and full build on pushes and pull requests
+- `ci.yml` — run `npm ci`, lint, typecheck, unit tests, and full build on pushes and pull requests
 - `release-artifacts.yml` — build ZIP artifacts, upload them as workflow artifacts, and create a draft GitHub Release on `v*` tags
 - `submit-stores.yml` — build once and submit Chrome / Firefox / Edge packages through store APIs on `v*` tags or manual dispatch
 
@@ -115,9 +116,15 @@ Safari remains a separate manual/TODO release lane.
 ## Checks
 
 ```bash
+npm run lint
 npm run typecheck
 npm run test:unit
 ```
+
+## Code style
+
+- `.editorconfig` in the repository root is the source of truth for indentation, line endings, and trailing whitespace handling.
+- Run `npm run lint` before commits and keep the ESLint configuration green.
 
 ## Manifest strategy
 

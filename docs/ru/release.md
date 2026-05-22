@@ -10,6 +10,7 @@
 2. Прогнать:
 
    ```bash
+   npm run lint
    npm run typecheck
    npm run test:unit
    npm run build
@@ -22,7 +23,7 @@
 
 Сейчас release automation в репозитории разделена на два уровня:
 
-- `ci.yml` — проверка кода на каждом push / pull request;
+- `ci.yml` — `lint`, `typecheck`, `test:unit` и `build` на каждом push / pull request;
 - `release-artifacts.yml` — сборка релизных ZIP-артефактов и создание draft release по тегам `v*`;
 - `submit-stores.yml` — submit в Chrome / Firefox / Edge через store APIs.
 

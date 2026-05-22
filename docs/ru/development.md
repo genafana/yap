@@ -31,6 +31,7 @@ npm run dev:opera
 ### Проверки
 
 ```bash
+npm run lint
 npm run typecheck
 npm run test:unit
 npm run build
@@ -81,11 +82,7 @@ Bundled defaults лежат в `public/config.json`.
 
 Bundled groups лежат в `public/groups.json`.
 
-Файл допускает нестрогий JSON-формат, поэтому при изменениях нужно помнить:
-
-- разрешены комментарии;
-- разрешены висячие запятые;
-- строковые блоки могут быть разбиты так же, как это поддерживает `parseLooseJson`.
+Файл должен оставаться обычным валидным JSON с форматированием в стиле проекта.
 
 ## Где находится основная логика интерфейса
 
@@ -97,4 +94,4 @@ Bundled groups лежат в `public/groups.json`.
 1. выносить чистую логику в функции, пригодные для unit tests;
 2. не дублировать browser-specific manifest-файлы;
 3. не хранить store credentials в репозитории;
-4. проверять изменения минимум через `typecheck`, `test:unit`, `build`.
+4. проверять изменения минимум через `lint`, `typecheck`, `test:unit`, `build`.

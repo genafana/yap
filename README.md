@@ -2,6 +2,12 @@
 
 Cross-browser WebExtension project for YAP UI customization.
 
+## Documentation
+
+- `docs/ru/architecture.md` — project architecture
+- `docs/ru/development.md` — development workflow
+- `docs/ru/release.md` — release, signing, and store publication
+
 ## Current repository layout
 
 - `src/` — TypeScript/WXT source tree.
@@ -103,8 +109,6 @@ Browser differences are handled through:
 - WXT browser targets (`chrome`, `firefox`, `edge`, `opera`, `safari`)
 - browser-specific manifest fields such as `browser_specific_settings.gecko`
 - browser-specific build/package commands instead of manually maintained duplicate manifests
-
-This replaces the old `manifest.json` + `manifest_ff.json` approach.
 
 ## Publishing and signing
 

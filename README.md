@@ -6,6 +6,7 @@ Cross-browser WebExtension project for YAP UI customization.
 
 - `docs/ru/architecture.md` — project architecture
 - `docs/ru/development.md` — development workflow
+- `docs/privacy-policy.md` — public privacy policy for store listings
 - `docs/ru/release.md` — release, signing, and store publication
 
 ## Current repository layout

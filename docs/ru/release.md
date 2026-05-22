@@ -73,6 +73,8 @@ npm run submit:init
 
 Локально появится `.env.submit`, который нужно заполнить store credentials и **не коммитить**.
 
+Для карточки Chrome Web Store также нужен публичный URL политики конфиденциальности. В этом репозитории она лежит в `docs/privacy-policy.md` и должна публиковаться через GitHub Pages.
+
 Для GitHub Actions понадобятся environment secrets:
 
 - `CHROME_EXTENSION_ID`

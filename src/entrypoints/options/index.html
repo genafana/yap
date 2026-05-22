@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YAP Lamp Options</title>
+    <script type="module" src="./main.ts"></script>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <p class="eyebrow">browser-extention-yap</p>
+        <h1>Extension settings</h1>
+        <p>
+          This page is the canonical place for extension configuration.
+        </p>
+      </header>
+
+      <form id="settings-form" class="card">
+        <label class="field">
+          <span>Enable extension</span>
+          <input id="enabled" type="checkbox" />
+        </label>
+
+        <label class="field">
+          <span>Enable debug mode</span>
+          <input id="debug" type="checkbox" />
+        </label>
+
+        <label class="field">
+          <span>Keep context-menu feature enabled</span>
+          <input id="applyContextMenu" type="checkbox" />
+        </label>
+
+        <label class="field">
+          <span>Show floating debug badge on supported pages</span>
+          <input id="showFloatingBadge" type="checkbox" />
+        </label>
+
+        <div class="actions">
+          <button type="submit">Save settings</button>
+          <span id="save-status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

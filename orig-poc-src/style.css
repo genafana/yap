@@ -1,0 +1,249 @@
+﻿.citate {
+    border: 1px solid dimgray;
+    color: dimgray;
+}
+
+
+.citate > span, .citate > a {
+    display: block;
+    float: left;
+    border: none !important;
+}
+
+.postdetails {
+  font-size: .85em !important; 
+}
+
+div.postcolor {
+    padding: 0 !important;
+}
+
+.hidden {
+    display: none !Important;
+}
+
+.entry-table {
+    border-collapse: collapse;
+    /*width: 100% !importamt;*/
+}
+
+.user-info-cell {
+    vertical-align: top !important;
+}
+
+/*.user-img {
+    border-radius: .25em;
+}*/
+
+.entry-column1 {
+    text-align: center;
+    padding: .5em;
+    vertical-align: top;
+}
+
+
+.user-msg {
+    padding-left: 1em !important;
+    padding-right: .25em !important;
+    padding-top: .5em !important;
+    padding-bottom: 1em !important;
+}
+
+.user-nik {
+    padding-bottom: .75em;
+    text-align: center;
+}
+
+.post-rank {
+    padding-left: 2em !important;
+    background: none !important;
+}
+
+.editLink  {
+    padding-left: 1em;
+}
+
+.editLink > a  {
+    padding-left: 1em;
+    color: blue !important;
+}
+
+div.user-wrapper {
+    padding: .5em;
+    border-radius: .5em;
+}
+
+.scroll-top-btn {
+    display: none !important;
+}
+
+div.signature, span.edit {
+    font-size: .8em !important;
+}
+
+.msg-menu-item {
+    padding-left: .5em !important;
+    padding-right: .5em !important;
+}
+
+.msg-menu-text {
+    opacity: .7;
+    font-size: .95em;
+}
+
+.report911 {
+    color: red !important;
+}
+
+.msg-menu-icon {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    font-size: 0;
+    line-height: 0;
+    color: transparent;
+    text-decoration: none !important;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 16px 16px;
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+.icon-pm {
+    background-image: url(https://www.yaplakal.com/html/static/icon-pm.svg);
+}
+
+.icon-quote {
+    background-image: url(https://www.yaplakal.com/html/static/icon-quote.svg) !important;
+}
+
+.icon-report {
+    background-image: url(https://www.yaplakal.com/html/static/icon-report.svg) !important;
+}
+  
+.icon-reply {
+    background-image: url(https://www.yaplakal.com/html/static/icon-reply.svg) !important;
+}
+ 
+.icon-edit {
+    background-image: url(https://www.yaplakal.com/html/static/icon-edit.svg) !important;
+}
+
+#scrollTop {
+    width: 4em !important;
+    text-align: center !important;
+    bottom: 30px;
+}
+
+table:has(> tbody > tr > td.citate),
+table:has(> tbody > tr > td#CODE) {
+    margin: .75em !important;
+    margin-top: 0 !important;
+}
+
+td.citate, td#CODE {
+    padding-left: .5em !important;
+    padding-right: .5em !important;
+    padding-top: .35em !important;
+    padding-bottom: .35em !important;
+}
+
+table[id^=entry] a:not(.msg-menu-text):not(.msg-date):not(.title) {
+    color: darkblue !important;
+}
+
+td.citate a, td.citate span {
+    display: contents;
+}
+
+#toggleFBO {
+  background-color: SteelBlue;
+  color: #ffffff;            /* Белый текст */
+  border: none;              
+  border-radius: 6px;        
+  padding: 3px 6px;        
+  font-size: initial;
+  font-weight: 500;
+  cursor: pointer;           
+  transition: background-color 0.25s ease; /* Плавная анимация */
+}
+
+#toggleFBO:hover {
+  background-color: #2563eb; /* Более тёмный синий при наведении */
+}
+
+/* Важно для доступности (управление с клавиатуры) */
+#toggleFBO:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+table.smilies-table > tr > td:not(:first-child) {
+  border-left: 1px solid silver;
+}
+
+/*.postcolor table {
+   width: 100%;
+   padding-right: 1.5em;
+} */
+
+/* адаптация даты/времени сообщения для ночной темы */
+td > a > span.msg-date {
+    color: darkslategray !important;
+}
+
+td > a:has(span.msg-date) {
+    text-decoration: none;
+}
+
+.toast {
+  position: fixed;
+  top: 24px; /* Появляется вверху экрана */
+  left: 50%;
+  transform: translateX(-50%);
+  background: Honeydew; /*SteelBlue*/
+  border: 1px solid green; 
+  color: green; /*white*/ 
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-family: Verdana, Tahoma, Geneva, sans-serif, 'Segoe UI';
+  font-weight: bold;
+  font-size: .8rem;
+  font-weight: 500;
+  
+  /* Более выраженная тень */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+
+  z-index: 9999;
+  pointer-events: none;
+  user-select: none;
+}
+
+.toast.show {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease, visibility 0s linear 0s;
+}
+
+
+/* выделение цитат при мыши сверху */
+/*td.citate {
+    background: white;
+    transition: background 0.15s ease;
+}*/
+
+/* Подсветка при наведении */
+/*td.citate:hover {
+    background: OldLace !important;
+} */
+
+/* ✨ Магия: если внутри .citate есть другая .citate:hover — сбрасываем фон у родителя */
+/*td.citate:has(td.citate:hover) {
+    background: white !important;
+}*/

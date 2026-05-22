@@ -1,0 +1,12 @@
+node_modules/
+.output/
+.wxt/
+coverage/
+dist/
+build/
+tmp/
+.env
+.env.*
+!.env.submit.example
+.DS_Store
+

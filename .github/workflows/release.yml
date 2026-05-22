@@ -1,0 +1,39 @@
+name: Release Artifacts
+
+on:
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Verify project
+        run: |
+          npm run typecheck
+          npm run test:unit
+
+      - name: Build and zip
+        run: |
+          npm run build
+          npm run zip
+
+      - name: Upload output artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: webextension-artifacts
+          path: |
+            .output/**/*.zip
+            .output/**/manifest.json
+

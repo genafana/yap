@@ -1,0 +1,136 @@
+:root {
+  --ctxm-font-family: Verdana, Tahoma, Geneva, sans-serif, 'Segoe UI';  /* тип шрифта контекстного меню */
+  --ctxm-font-size: .9em;                                               /* размер шрифта контекстного меню */ 
+}
+
+
+/* ========== Контекстное меню: базовые стили ========== */
+
+/* Прозрачная подложка для закрытия меню по клику вне */
+.ctxm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.01);
+    z-index: 999998;
+    display: none;
+}
+
+/* Контейнер меню */
+.ctxm-menu {
+    position: fixed;
+    min-width: 14em;
+    max-width: 25em;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: .5em;
+    box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 4px 0;
+    z-index: 999999;
+    font: 13px/1.4 Tahoma, Arial, sans-serif;
+    display: none;
+}
+
+/* Пункт меню */
+.ctxm-item {
+    padding: .3em 1em;
+    margin-left: .3em;
+    margin-right: .3em;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    font-family: var(--ctxm-font-family);
+    font-size: var(--ctxm-font-size);
+}
+
+.ctxm-item:hover {
+    background: #0078d7;
+    color: #fff;
+
+}
+
+/* Разделитель */
+.ctxm-separator {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 4px 0;
+}
+
+/* ========== Отменить фильтр по пользователю ========== */
+
+#cancel_user_filter {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: block;
+    border: 2px solid red;
+    border-radius: 1em;
+    background: #FFC1AA;
+    opacity: 0.75;
+    
+    padding: 10px 16px;
+    cursor: pointer;
+    user-select: none;
+    font: 14px/1.4 Tahoma, Arial, sans-serif;
+    color: #222;
+
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.12),
+        0 2px 4px  rgba(0, 0, 0, 0.08);
+    
+    transition: all 0.2s ease;
+}
+
+#cancel_user_filter:hover {
+    opacity: 0.95;
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.15),
+        0 4px 8px  rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px); /* лёгкое "всплытие" при наведении */
+}
+
+#cancel_user_filter hr {
+    margin: 6px 0;
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+
+/*=========== Меткв "ПКМ" ===========*/
+.ext-ctx-tooltip {
+    position: fixed;
+    background: OldLace;
+    border 1px solid AntiqueWhite;
+    color: black;
+    padding: .15em .2em;
+    border-radius: .5em;
+    font-size: .75em;
+    font-family: inherit;
+    pointer-events: none;      /* ⚡ Обязательно: тултип не блокирует клики/ховеры */
+    z-index: 999999;           
+    white-space: nowrap;
+    pointer-events: none; /* чтобы не мешал кликам */
+    transform: translate(12px, 8px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+}
+
+
+/* ========== Адаптация под тёмную тему yaplakal ========== */
+/* Раскомментируй, если нужно */
+
+/*
+.ya-dark .ctxm-menu {
+    background: #2b2b2b;
+    border-color: #444;
+    color: #eee;
+}
+.ya-dark .ctxm-item:hover {
+    background: #005a9e;
+}
+.ya-dark .ctxm-separator {
+    background: #555;
+}
+*/

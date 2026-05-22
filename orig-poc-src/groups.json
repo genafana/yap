@@ -1,0 +1,14 @@
+{ "group1": { "ignore": true,         "users": "User1" },
+
+  "group2": { "color": "Khaki",       "users": "User2" },
+
+  "group3": { "color": "Moccasin",    "users": "User3" },
+
+  "group4": { "color": "Lime",        "users": "User4" },
+
+  "group5": { "color": "Salmon",      "users": "User5" },
+
+  "group6": { "color": "GreenYellow", "users": "User6" },
+
+  "group7": { "color": "Red",         "users": "User7" }
+}

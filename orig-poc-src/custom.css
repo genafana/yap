@@ -1,0 +1,17 @@
+/*table > tbody > tr > td.citate, 
+table > tbody > tr >  td#CODE {
+    padding-left: 5em !important;
+    padding-right: 5em !important;
+    padding-top: 5em !important;
+    padding-bottom: 5em !important;
+}*/
+
+.postcolor table {
+  width: 100%;
+  padding-right: 1em;
+}
+
+table.entry-table td img {
+ max-width: 100%;
+ height: auto;
+}

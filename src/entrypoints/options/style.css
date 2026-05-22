@@ -1,0 +1,65 @@
+:root {
+  color-scheme: light dark;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+}
+
+.hero {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #a5b4fc;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.card {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+button {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #6366f1;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+#save-status {
+  color: #93c5fd;
+}
+

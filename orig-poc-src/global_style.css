@@ -1,0 +1,33 @@
+﻿:root {
+  --top-font-family: Arial, sans-serif, 'Segoe UI';                        /* тип шрифта "шапки" сайта */
+  --content-font-family: Verdana, Tahoma, Geneva, sans-serif, 'Segoe UI';  /* тип шрифта контента */
+  --content-font-size: .8rem;                                              /* размер шрифта контента */ 
+  --content-width: 100%;                                                   /* ширина контента */
+  --active-themes-font-size: 1em;                                          /* размер шрифта блока "активные темы" */
+}
+
+body {
+  font-family: var(--content-font-family, inherit) !important; ;
+  font-size: var(--content-font-size, inherit) !important; 
+}
+
+div#header-container, div#menu-container {
+  font-family: var(--top-font-family, inherit) !important; ;
+}
+
+div#header, div#content, div#menu-container, #footer-inner {
+    width: var(--content-width, inherit) !important;
+    min-width: var(--content-width, inherit) !important;
+    max-width: var(--content-width, inherit) !important;
+}
+
+
+ul.topics-list > li > h5 {
+    font-size: var(--active-themes-font-size) !important;
+} 
+
+.citate {
+  font-family: var(--content-font-family, inherit) !important; 
+  font-size: var(--content-font-size, inherit) !important; 
+}
+

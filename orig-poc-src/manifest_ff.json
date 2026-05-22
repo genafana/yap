@@ -1,0 +1,53 @@
+﻿{
+  "manifest_version": 3,
+  "name": "ЯПлакал - старый ламповый дизайн ленты",
+  "version": "3.12",
+  "homepage_url": "https://cloud.mail.ru/public/V1pV/fbBWyV18W",
+  "host_permissions": [
+    "*://*.yaplakal.com/*",
+    "*://*.yap.ru/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.yaplakal.com/*", "*://*.yap.ru/*"],
+      "css": ["global_style.css","custom.css"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.yaplakal.com/*/topic*",
+        "*://*.yap.ru/*/topic*",
+        "*://*.yaplakal.com/forum*",
+        "*://*.yaplakal.com/?act=ST*",
+        "*://*.yaplakal.com/act/Post*",
+        "*://*.yap.ru/forum*",
+        "*://*.yaplakal.com/?act=ST*",
+        "*://*.yap.ru/?act=ST*",
+        "*://*.yap.ru/act/Post*"
+      ],
+      "js": ["settings.js","context_menu.js", "core.js"],
+      "css": ["style.css", "context_menu.css","custom.css"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "*://*.yaplakal.com/?act=Search&nav=au&CODE=show*",
+        "*://*.yap.ru/?act=Search&nav=au&CODE=show*"
+      ],
+      "js": ["settings.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["config.json"],
+      "matches": ["*://*.yaplakal.com/*", "*://*.yap.ru/*"]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "lamp-design@yaplakal.local",
+      "strict_min_version": "109.0"
+    }
+  }
+}

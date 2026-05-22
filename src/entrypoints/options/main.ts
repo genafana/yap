@@ -1,6 +1,7 @@
 import './style.css';
 
 import { getBrowser } from '../../utils/browser-api';
+import { localizeDocument, type MessageGetter } from '../../utils/i18n';
 import {
   settingDefinitions,
   settingKeys,
@@ -18,9 +19,25 @@ const saveStatus = document.querySelector<HTMLElement>('#save-status');
 const tableBody = document.querySelector<HTMLTableSectionElement>('#settings-table-body');
 const resetButton = document.querySelector<HTMLButtonElement>('#reset-settings');
 const exportButton = document.querySelector<HTMLButtonElement>('#export-settings');
+let getMessage: MessageGetter = (messageName) => messageName;
+
+function getLocalizedDefinition(key: keyof ExtensionSettings): {
+  label: string;
+  description: string;
+  valueLabels: string[];
+} {
+  const definition = settingDefinitions[key];
+
+  return {
+    label: getMessage(definition.labelMessage),
+    description: definition.descriptionMessage ? getMessage(definition.descriptionMessage) : '',
+    valueLabels: definition.valueLabelMessages?.map((message) => getMessage(message)) ?? []
+  };
+}
 
 function createInput(key: keyof ExtensionSettings, value: ExtensionSettings[typeof key]): HTMLElement {
   const definition = settingDefinitions[key];
+  const localized = getLocalizedDefinition(key);
 
   switch (definition.type) {
     case 'boolean': {
@@ -47,7 +64,7 @@ function createInput(key: keyof ExtensionSettings, value: ExtensionSettings[type
       definition.values?.forEach((optionValue, index) => {
         const option = document.createElement('option');
         option.value = String(optionValue);
-        option.textContent = definition.valueLabels?.[index] ?? String(optionValue);
+        option.textContent = localized.valueLabels[index] ?? String(optionValue);
         option.selected = optionValue === value;
         select.append(option);
       });
@@ -73,17 +90,17 @@ function renderForm(settings: ExtensionSettings): void {
   tableBody.replaceChildren();
 
   for (const key of settingKeys) {
-    const definition = settingDefinitions[key];
+    const localized = getLocalizedDefinition(key);
     const row = document.createElement('tr');
 
     const nameCell = document.createElement('td');
-    nameCell.textContent = definition.label;
+    nameCell.textContent = localized.label;
 
     const valueCell = document.createElement('td');
     valueCell.append(createInput(key, settings[key]));
 
     const descriptionCell = document.createElement('td');
-    descriptionCell.innerHTML = definition.description || '—';
+    descriptionCell.innerHTML = localized.description || getMessage('options_no_description');
 
     row.append(nameCell, valueCell, descriptionCell);
     tableBody.append(row);
@@ -127,7 +144,7 @@ async function handleSubmit(event: SubmitEvent): Promise<void> {
   renderForm(documentState.settings);
 
   if (saveStatus != null) {
-    saveStatus.textContent = 'Настройки сохранены';
+    saveStatus.textContent = getMessage('options_save_success');
     window.setTimeout(() => {
       saveStatus.textContent = '';
     }, 2000);
@@ -138,7 +155,7 @@ async function handleReset(): Promise<void> {
   const documentState = await resetSettingsToBundledDefaults();
   renderForm(documentState.settings);
   if (saveStatus != null) {
-    saveStatus.textContent = 'Восстановлены значения по умолчанию';
+    saveStatus.textContent = getMessage('options_restore_success');
   }
 }
 
@@ -156,13 +173,15 @@ async function handleExport(): Promise<void> {
   URL.revokeObjectURL(url);
 
   if (saveStatus != null) {
-    saveStatus.textContent = 'Файл config.json экспортирован';
+    saveStatus.textContent = getMessage('options_export_success');
   }
 }
 
 async function bootstrap(): Promise<void> {
   const browser = await getBrowser();
-  document.title = `YAP Lamp Options v${browser.runtime.getManifest().version}`;
+  getMessage = browser.i18n.getMessage.bind(browser.i18n);
+  localizeDocument(document, getMessage);
+  document.title = getMessage('options_title_with_version', browser.runtime.getManifest().version);
   await populateForm();
   form?.addEventListener('submit', (event) => {
     void handleSubmit(event);

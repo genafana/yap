@@ -1,6 +1,5 @@
 import { defineConfig } from 'wxt';
 
-const extensionName = 'YAP Lamp Design';
 const hostPermissions = ['*://*.yaplakal.com/*', '*://*.yap.ru/*'];
 
 export default defineConfig({
@@ -12,15 +11,15 @@ export default defineConfig({
     disabled: true
   },
   manifest: {
-    name: extensionName,
-    short_name: 'YAP Lamp',
-    description: 'Cross-browser extension for YAP UI customization.',
+    name: '__MSG_extension_name__',
+    short_name: '__MSG_extension_short_name__',
+    description: '__MSG_extension_description__',
     version: '0.1.0',
     default_locale: 'en',
     permissions: ['storage'],
     host_permissions: hostPermissions,
     action: {
-      default_title: extensionName
+      default_title: '__MSG_action_title__'
     },
     web_accessible_resources: [
       {

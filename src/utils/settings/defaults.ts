@@ -2,12 +2,12 @@ export type SettingPrimitive = string | number | boolean;
 export type SettingKind = 'string' | 'integer' | 'boolean' | 'enum';
 
 export interface SettingDefinition<T extends SettingPrimitive> {
-  readonly label: string;
+  readonly labelMessage: string;
   readonly type: SettingKind;
   readonly defaultValue: T;
-  readonly description: string;
+  readonly descriptionMessage?: string;
   readonly values?: readonly T[];
-  readonly valueLabels?: readonly string[];
+  readonly valueLabelMessages?: readonly string[];
 }
 
 export interface ExtensionSettings {
@@ -50,153 +50,156 @@ export const settingDefinitions: {
   readonly [K in keyof ExtensionSettings]: SettingDefinition<ExtensionSettings[K]>;
 } = {
   left_col_width: {
-    label: 'Ширина левого столбца',
+    labelMessage: 'setting_left_col_width_label',
     type: 'string',
     defaultValue: '9em',
-    description:
-      '<a target="_blank" rel="noopener noreferrer" href="https://learn.javascript.ru/css-units">Единицы измерения в CSS</a>'
+    descriptionMessage: 'setting_left_col_width_description'
   },
   left_col_right_border: {
-    label: 'Вертикальная линия левого столбца',
+    labelMessage: 'setting_left_col_right_border_label',
     type: 'string',
     defaultValue: '1px solid silver',
-    description:
-      'Формат: толщина стиль цвет. <a target="_blank" rel="noopener noreferrer" href="https://htmlbook.ru/css/border-style">Стили линий</a> <a target="_blank" rel="noopener noreferrer" href="https://colorscheme.ru/html-colors.html">Цвета HTML</a>'
+    descriptionMessage: 'setting_left_col_right_border_description'
   },
   hor_separate_border: {
-    label: 'Горизонтальная линия - разделитель сообщений',
+    labelMessage: 'setting_hor_separate_border_label',
     type: 'string',
     defaultValue: '1px ridge silver',
-    description:
-      'Формат: толщина стиль цвет. <a target="_blank" rel="noopener noreferrer" href="https://htmlbook.ru/css/border-style">Стили линий</a>'
+    descriptionMessage: 'setting_hor_separate_border_description'
   },
   user_pic_size: {
-    label: 'Размер аватарки в пикселях',
+    labelMessage: 'setting_user_pic_size_label',
     type: 'integer',
     defaultValue: 70,
-    description: 'Чем больше число, тем больше размер аватарки, понятное дело'
+    descriptionMessage: 'setting_user_pic_size_description'
   },
   nik_on_top: {
-    label: 'Ник над аватаркой',
+    labelMessage: 'setting_nik_on_top_label',
     type: 'boolean',
     defaultValue: true,
-    description:
-      'При включенной галочке ник выводится в ленте над аватаркой пользователя, при отключенной - под ней.'
+    descriptionMessage: 'setting_nik_on_top_description'
   },
   show_date_or_age: {
-    label: 'Дата регистрации или возраст на сайте',
+    labelMessage: 'setting_show_date_or_age_label',
     type: 'enum',
     defaultValue: 'date',
     values: ['date', 'age'],
-    valueLabels: ['дата', 'возраст'],
-    description: 'Вид вывода информации по пользователю'
+    valueLabelMessages: ['setting_show_date_or_age_value_date', 'setting_show_date_or_age_value_age'],
+    descriptionMessage: 'setting_show_date_or_age_description'
   },
   self_highlight_bg: {
-    label: 'Фон в левом столбце в собственных сообщениях',
+    labelMessage: 'setting_self_highlight_bg_label',
     type: 'string',
     defaultValue: 'Gainsboro',
-    description:
-      'При пустом значении выделения фоном нет. <a target="_blank" rel="noopener noreferrer" href="https://colorscheme.ru/html-colors.html">Цвета HTML</a>'
+    descriptionMessage: 'setting_self_highlight_bg_description'
   },
   self_highlight_border: {
-    label: 'Линия-граница в левом столбце в собственных сообщениях',
+    labelMessage: 'setting_self_highlight_border_label',
     type: 'string',
     defaultValue: '1px solid silver',
-    description:
-      'При пустом значении границы нет. Формат: толщина стиль цвет. <a target="_blank" rel="noopener noreferrer" href="https://htmlbook.ru/css/border-style">Стили линий</a>'
+    descriptionMessage: 'setting_self_highlight_border_description'
   },
   title_bg_color: {
-    label: 'Цвет фона строки-заголовка сообщения и левого столбца',
+    labelMessage: 'setting_title_bg_color_label',
     type: 'string',
     defaultValue: '#FAF8F8',
-    description:
-      '<a target="_blank" rel="noopener noreferrer" href="https://colorscheme.ru/html-colors.html">Цвета HTML</a>'
+    descriptionMessage: 'setting_title_bg_color_description'
   },
   message_bg_color: {
-    label: 'Цвет фона сообщения',
+    labelMessage: 'setting_message_bg_color_label',
     type: 'string',
     defaultValue: 'white',
-    description:
-      '<a target="_blank" rel="noopener noreferrer" href="https://colorscheme.ru/html-colors.html">Цвета HTML</a>'
+    descriptionMessage: 'setting_message_bg_color_description'
   },
   citate_bg_color: {
-    label: 'Цвет фона цитаты в сообщении',
+    labelMessage: 'setting_citate_bg_color_label',
     type: 'string',
     defaultValue: 'white',
-    description:
-      '<a target="_blank" rel="noopener noreferrer" href="https://colorscheme.ru/html-colors.html">Цвета HTML</a>'
+    descriptionMessage: 'setting_citate_bg_color_description'
   },
   msg_menu_type: {
-    label: 'Тип меню в сообщениях',
+    labelMessage: 'setting_msg_menu_type_label',
     type: 'enum',
     defaultValue: 'icon',
     values: ['icon', 'text'],
-    valueLabels: ['иконки', 'текст'],
-    description: ''
+    valueLabelMessages: ['setting_msg_menu_type_value_icon', 'setting_msg_menu_type_value_text']
   },
   reduce_ad_block: {
-    label: 'Уменьшить ширину правого столбца',
+    labelMessage: 'setting_reduce_ad_block_label',
     type: 'boolean',
     defaultValue: false,
-    description:
-      'При включенной галочке уменьшение ширины на 20%. Для широких мониторов не актуально.'
+    descriptionMessage: 'setting_reduce_ad_block_description'
   },
   origin_scroll_top: {
-    label: 'Появляющаяся оригинальная ссылка "Наверх"',
+    labelMessage: 'setting_origin_scroll_top_label',
     type: 'enum',
     defaultValue: '',
     values: ['', 'hide', 'moveleft'],
-    valueLabels: ['оставить как есть', 'скрыть', 'переместить ближе к столбцу сообщений'],
-    description: ''
+    valueLabelMessages: [
+      'setting_origin_scroll_top_value_keep',
+      'setting_origin_scroll_top_value_hide',
+      'setting_origin_scroll_top_value_moveleft'
+    ]
   },
   apply_context_menu: {
-    label: 'Использовать контекстное меню по ПКМ',
+    labelMessage: 'setting_apply_context_menu_label',
     type: 'boolean',
     defaultValue: true,
-    description:
-      'Включение/отключение контекстного меню в ленте сообщений по правой кнопке мыши'
+    descriptionMessage: 'setting_apply_context_menu_description'
   },
   privat_mail_type: {
-    label: 'Тип меню "написать в личку"',
+    labelMessage: 'setting_privat_mail_type_label',
     type: 'enum',
     defaultValue: 'msg_menu',
     values: ['msg_menu', 'avatar_rkm'],
-    valueLabels: ['в меню сообщения', 'ПКМ на аватаре'],
-    description:
-      'Способ вызова страницы "лички". При выборе "ПКМ на аватаре" переход в "личку" происходит в контекстном меню по ПКМ. Настройка игнорируется, если контекстное меню по ПКМ отключено.'
+    valueLabelMessages: [
+      'setting_privat_mail_type_value_msg_menu',
+      'setting_privat_mail_type_value_avatar_rkm'
+    ],
+    descriptionMessage: 'setting_privat_mail_type_description'
   },
   response_form: {
-    label: 'Форма быстрого ответа (ФБО)',
+    labelMessage: 'setting_response_form_label',
     type: 'enum',
     defaultValue: 'always',
     values: ['always', 'toggle'],
-    valueLabels: ['есть всегда', 'скрыть/отобразить по кнопке'],
-    description:
-      'В режиме "скрыть/отобразить по кнопке" не занимает место на экране в скрытом виде'
+    valueLabelMessages: [
+      'setting_response_form_value_always',
+      'setting_response_form_value_toggle'
+    ],
+    descriptionMessage: 'setting_response_form_description'
   },
   smilies_show_all: {
-    label: 'Показывать все смайлики непосредственно на ФБО',
+    labelMessage: 'setting_smilies_show_all_label',
     type: 'enum',
     defaultValue: 'always',
     values: ['always', 'simple', ''],
-    valueLabels: ['всегда', 'только для простой формы', 'нет'],
-    description: 'Если выбрано "нет", используется стандартный функционал сайта'
+    valueLabelMessages: [
+      'setting_smilies_show_all_value_always',
+      'setting_smilies_show_all_value_simple',
+      'setting_smilies_show_all_value_none'
+    ],
+    descriptionMessage: 'setting_smilies_show_all_description'
   },
   smilies_text: {
-    label: 'Показывать текстовый эквивалент смайлика',
+    labelMessage: 'setting_smilies_text_label',
     type: 'enum',
     defaultValue: 'title',
     values: ['bottom', 'title', ''],
-    valueLabels: ['снизу', 'всплывающая подсказка', 'нет'],
-    description: 'Настройка используется для включенного режима показа смайликов'
+    valueLabelMessages: [
+      'setting_smilies_text_value_bottom',
+      'setting_smilies_text_value_title',
+      'setting_smilies_text_value_none'
+    ],
+    descriptionMessage: 'setting_smilies_text_description'
   },
   smilies_columns: {
-    label: 'Кол-во столбцов при выводе смайликов на ФБО',
+    labelMessage: 'setting_smilies_columns_label',
     type: 'enum',
     defaultValue: '2',
     values: ['2', '3', '4', '5'],
-    valueLabels: ['2', '3', '4', '5'],
-    description: 'Четыре или пять столбцов - скорее для широких мониторов'
+    valueLabelMessages: ['2', '3', '4', '5'],
+    descriptionMessage: 'setting_smilies_columns_description'
   }
 };
 

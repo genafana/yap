@@ -33,7 +33,12 @@ export default defineContentScript({
     replaceAuthorSearchLinks(document);
 
     if (filteredUserName != null) {
-      ensureFilterBanner(filteredUserName, window.localStorage, document);
+      ensureFilterBanner(
+        filteredUserName,
+        window.localStorage,
+        browser.i18n.getMessage.bind(browser.i18n),
+        document
+      );
     }
 
     window.addEventListener('beforeunload', () => {
@@ -52,6 +57,7 @@ export default defineContentScript({
       settings: settingsDocument.settings,
       userGroups,
       filteredUserName,
+      getMessage: browser.i18n.getMessage.bind(browser.i18n),
       runtime: {
         browser,
         manifest: browser.runtime.getManifest()

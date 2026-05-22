@@ -1,4 +1,5 @@
 import { clearFilteredUserName, type StorageLike } from './page-state';
+import type { MessageGetter } from '../../utils/i18n';
 
 const PLUGIN_READY_CLASS = 'plugin-ready';
 const VISIBILITY_GUARD_ID = 'yap-lamp-visibility-guard';
@@ -28,6 +29,7 @@ export function markPluginReady(doc: Document = document): void {
 export function ensureFilterBanner(
   filteredUserName: string,
   storage: StorageLike,
+  getMessage: MessageGetter,
   doc: Document = document
 ): void {
   const target = doc.getElementById('content') ?? doc.body;
@@ -50,7 +52,11 @@ export function ensureFilterBanner(
     target.append(banner);
   }
 
-  banner.innerHTML = `Фильтр: ${filteredUserName}<hr/>Сбросить`;
+  banner.replaceChildren();
+  banner.append(`${getMessage('filter_banner_label')} ${filteredUserName}`, doc.createElement('hr'));
+  const resetText = doc.createElement('span');
+  resetText.textContent = getMessage('filter_banner_reset');
+  banner.append(resetText);
   banner.classList.remove('hidden');
 }
 

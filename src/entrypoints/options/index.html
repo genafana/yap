@@ -3,24 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>YAP Lamp Options</title>
+    <title data-i18n="options_title">YAP Lamp Options</title>
     <script type="module" src="./main.ts"></script>
   </head>
   <body>
     <main class="page">
       <header class="hero">
-        <p class="eyebrow">browser-extention-yap</p>
-        <h1>Extension settings</h1>
-        <p>
+        <p class="eyebrow" data-i18n="options_eyebrow">YAP Lamp</p>
+        <h1 data-i18n="options_heading">Extension settings</h1>
+        <p data-i18n="options_description">
           This page is the canonical place for extension configuration.
         </p>
       </header>
 
       <form id="settings-form" class="card">
         <div class="actions">
-          <button type="submit">Сохранить</button>
-          <button id="reset-settings" type="button">Восстановить</button>
-          <button id="export-settings" type="button">Экспортировать</button>
+          <button type="submit" data-i18n="options_save">Save</button>
+          <button id="reset-settings" type="button" data-i18n="options_restore">Restore</button>
+          <button id="export-settings" type="button" data-i18n="options_export">Export</button>
           <span id="save-status" role="status" aria-live="polite"></span>
         </div>
 
@@ -28,9 +28,9 @@
           <table class="settings-table">
             <thead>
               <tr>
-                <th>Параметр</th>
-                <th>Значение</th>
-                <th>Описание</th>
+                <th data-i18n="options_table_parameter">Parameter</th>
+                <th data-i18n="options_table_value">Value</th>
+                <th data-i18n="options_table_description">Description</th>
               </tr>
             </thead>
             <tbody id="settings-table-body"></tbody>

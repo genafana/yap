@@ -1,6 +1,7 @@
 import type Browser from 'webextension-polyfill';
 
 import type { UserGroupEntry, UserGroupLookup } from '../../utils/groups';
+import type { MessageGetter } from '../../utils/i18n';
 import type { ExtensionSettings } from '../../utils/settings/defaults';
 import { reduceRightColumn } from '../content-foundation/dom';
 import { getPostArea, getRow } from '../content-foundation/page';
@@ -26,6 +27,7 @@ interface EnhanceOptions {
   userGroups: UserGroupLookup;
   filteredUserName: string | null;
   runtime: RuntimeBridge;
+  getMessage: MessageGetter;
 }
 
 type MenuIconType = 'pm' | 'quote' | 'report' | 'reply' | 'edit';
@@ -71,10 +73,10 @@ export function shouldHideFilteredTable(
 }
 
 export async function enhanceLegacyForumPage(options: EnhanceOptions): Promise<void> {
-  const { settings, userGroups, filteredUserName, runtime } = options;
+  const { settings, userGroups, filteredUserName, runtime, getMessage } = options;
 
-  addConfigMenu(runtime);
-  initContextMenu(settings, runtime);
+  addConfigMenu(runtime, getMessage);
+  initContextMenu(settings, runtime, getMessage);
 
   if (settings.reduce_ad_block) {
     reduceRightColumn();
@@ -82,7 +84,7 @@ export async function enhanceLegacyForumPage(options: EnhanceOptions): Promise<v
 
   const postArea = getPostArea();
   if (postArea != null) {
-    renderSmilesTable(settings);
+    renderSmilesTable(settings, getMessage);
   }
 
   const entryTables = Array.from(document.querySelectorAll<HTMLTableElement>('table[id^="entry"]'));
@@ -90,26 +92,31 @@ export async function enhanceLegacyForumPage(options: EnhanceOptions): Promise<v
     transformEntryTable(table, {
       settings,
       userGroups,
-      filteredUserName
+      filteredUserName,
+      getMessage
     });
   }
 
-  setupResponseFormToggle(settings, postArea);
+  setupResponseFormToggle(settings, postArea, getMessage);
   adjustScrollTopElement(settings);
-  addReplyUploadFeature();
-  setBetterCopyMessageLink();
+  addReplyUploadFeature(getMessage);
+  setBetterCopyMessageLink(getMessage);
   setUserFilterForQuotes(settings);
   installAntiCollapseObserver();
 }
 
-function initContextMenu(settings: ExtensionSettings, runtime: RuntimeBridge): void {
+function initContextMenu(
+  settings: ExtensionSettings,
+  runtime: RuntimeBridge,
+  getMessage: MessageGetter
+): void {
   if (!settings.apply_context_menu || document.body.dataset.yapLampContextMenu === 'ready') {
     return;
   }
 
   const userActions = [
     {
-      label: 'Перейти в профиль',
+      label: getMessage('context_open_profile'),
       action: function (this: HTMLElement) {
         const anchor = this.closest('a') ?? this.parentElement;
         const href = anchor?.getAttribute('href');
@@ -119,7 +126,7 @@ function initContextMenu(settings: ExtensionSettings, runtime: RuntimeBridge): v
       }
     },
     {
-      label: 'Показать только сообщения пользователя',
+      label: getMessage('context_filter_user'),
       action: function (this: HTMLElement) {
         const table = this.closest('table.entry-table,[data-nik-name]') as HTMLElement | null;
         const userName = table?.dataset.nikName;
@@ -134,7 +141,7 @@ function initContextMenu(settings: ExtensionSettings, runtime: RuntimeBridge): v
 
   if (settings.privat_mail_type === 'avatar_rkm') {
     userActions.push({
-      label: 'Написать в личку',
+        label: getMessage('context_write_private'),
       action: function (this: HTMLElement) {
         const table = this.closest('table');
         const pmLink = table?.querySelector<HTMLAnchorElement>('a.search_pm');
@@ -148,7 +155,7 @@ function initContextMenu(settings: ExtensionSettings, runtime: RuntimeBridge): v
       user_actions: userActions,
       user_filter_only: [
         {
-          label: 'Показать только сообщения пользователя',
+          label: getMessage('context_filter_user'),
           action: function (this: HTMLElement) {
             const userName = extractCitationAuthor(readElementText(this));
             if (userName != null) {
@@ -161,7 +168,7 @@ function initContextMenu(settings: ExtensionSettings, runtime: RuntimeBridge): v
       ],
       check_update: [
         {
-          label: `Проверить обновление (v${runtime.manifest.version})`,
+          label: getMessage('context_check_update', runtime.manifest.version),
           action: function () {
             const homepageUrl = runtime.manifest.homepage_url;
             if (homepageUrl != null) {
@@ -172,7 +179,8 @@ function initContextMenu(settings: ExtensionSettings, runtime: RuntimeBridge): v
       ]
     },
     document,
-    window
+    window,
+    getMessage('context_menu_tooltip')
   );
 
   document.body.dataset.yapLampContextMenu = 'ready';
@@ -184,9 +192,10 @@ function transformEntryTable(
     settings: ExtensionSettings;
     userGroups: UserGroupLookup;
     filteredUserName: string | null;
+    getMessage: MessageGetter;
   }
 ): void {
-  const { settings, userGroups, filteredUserName } = options;
+  const { settings, userGroups, filteredUserName, getMessage } = options;
   const rows = originalTable.rows;
   const currentUser = readCurrentUser();
 
@@ -234,7 +243,7 @@ function transformEntryTable(
     userNameElement.style.paddingRight = '.5em';
     if (!isCurrentUser) {
       userNameElement.style.cursor = 'pointer';
-      userNameElement.addEventListener('click', mentionUser);
+      userNameElement.addEventListener('click', (event) => mentionUser(event, getMessage));
     }
   }
 
@@ -263,7 +272,7 @@ function transformEntryTable(
     userImage.setAttribute('height', String(settings.user_pic_size));
     userImage.setAttribute('width', String(settings.user_pic_size));
     userImage.src = '//www.yaplakal.com/html/static/noavatar.svg';
-    userImage.title = 'Профиль';
+    userImage.title = getMessage('profile_title');
     userImage.classList.add('user-img');
     noAvatar.append(userImage);
     userPic.append(noAvatar);
@@ -289,7 +298,7 @@ function transformEntryTable(
   const userLabel = userInfoRow.querySelector<HTMLElement>('span.badge-author');
   const toPrivate = userInfoRow.querySelector<HTMLAnchorElement>('a.pm-icon');
   if (toPrivate != null) {
-    decorateMessageMenuItem(toPrivate, settings, 'pm', 'личка');
+    decorateMessageMenuItem(toPrivate, settings, 'pm', getMessage('message_menu_pm'));
     if (settings.privat_mail_type === 'avatar_rkm') {
       toPrivate.classList.add('hidden', 'search_pm');
     }
@@ -300,10 +309,10 @@ function transformEntryTable(
   if (userInfoRow.querySelector('a.quote-icon') != null || isCurrentUser) {
     partialQuoteLink = document.createElement('a');
     partialQuoteLink.href = '#';
-    partialQuoteLink.title = 'Для вставки цитаты предварительно выделите текст мышью.';
+    partialQuoteLink.title = getMessage('partial_quote_hint');
     partialQuoteLink.dataset.tableId = originalTable.id;
-    decorateMessageMenuItem(partialQuoteLink, settings, 'quote', 'цитата');
-    partialQuoteLink.addEventListener('click', insertPartialQuote);
+    decorateMessageMenuItem(partialQuoteLink, settings, 'quote', getMessage('message_menu_quote'));
+    partialQuoteLink.addEventListener('click', (event) => insertPartialQuote(event, getMessage));
 
     hrefToPost = document.createElement('span');
     hrefToPost.innerHTML = '▼';
@@ -319,7 +328,7 @@ function transformEntryTable(
 
   const replyLink = userInfoRow.querySelector<HTMLAnchorElement>('a.reply-icon');
   if (replyLink != null) {
-    decorateMessageMenuItem(replyLink, settings, 'reply', 'ответить');
+    decorateMessageMenuItem(replyLink, settings, 'reply', getMessage('message_menu_reply'));
   }
 
   const reportLink = userInfoRow.querySelector<HTMLAnchorElement>('a.report-icon');
@@ -331,13 +340,13 @@ function transformEntryTable(
   const postRank = userInfoRow.querySelector<HTMLElement>('div[id^="p_rank"]');
   const userStatus = userInfoRow.querySelector<HTMLElement>('div.postdetails');
   if (userStatus != null) {
-    userStatus.innerHTML = buildUserStatus(userStatus, userNameElement, userGroup, settings);
+    userStatus.innerHTML = buildUserStatus(userStatus, userNameElement, userGroup, settings, getMessage);
   }
 
   const postHeaderRow = getRow(rows, 'postHeader') as HTMLTableRowElement | null;
   const editLink = postHeaderRow?.querySelector<HTMLAnchorElement>('a.edit-icon') ?? null;
   if (editLink != null) {
-    decorateMessageMenuItem(editLink, settings, 'edit', 'правка');
+    decorateMessageMenuItem(editLink, settings, 'edit', getMessage('message_menu_edit'));
   }
 
   const messageRow = getRow(rows, 'userMsg') as HTMLTableRowElement | null;
@@ -520,7 +529,8 @@ function buildUserStatus(
   userStatus: HTMLElement,
   userNameElement: HTMLElement | null,
   userGroup: UserGroupEntry | undefined,
-  settings: ExtensionSettings
+  settings: ExtensionSettings,
+  getMessage: MessageGetter
 ): string {
   let newStatus = '';
   const statusHtml = userStatus.innerHTML || '';
@@ -534,7 +544,7 @@ function buildUserStatus(
   if (settings.show_date_or_age === 'age') {
     const ageMatch = statusHtml.match(/сайте\s\d+.+/);
     if (ageMatch != null) {
-      newStatus += `${newStatus ? '<br/>' : ''}На сайте: ${ageMatch[0].substring(6).trim()}`;
+      newStatus += `${newStatus ? '<br/>' : ''}${getMessage('user_status_on_site')}: ${ageMatch[0].substring(6).trim()}`;
     }
   }
 
@@ -548,11 +558,11 @@ function buildUserStatus(
   const messagesMatch = infoTitle.match(/ний:\s.+/);
   if (messagesMatch != null) {
     const digits = messagesMatch[0].match(/\d+/g);
-    newStatus += `${newStatus ? '<br/>' : ''}${digits?.join('') ?? 0} сообщ.`;
+    newStatus += `${newStatus ? '<br/>' : ''}${digits?.join('') ?? 0} ${getMessage('user_status_posts_short')}`;
   }
 
   if (userGroup?.group != null) {
-    newStatus += `${newStatus ? '<br/>' : ''}Группа: ${userGroup.group}`;
+    newStatus += `${newStatus ? '<br/>' : ''}${getMessage('user_status_group')}: ${userGroup.group}`;
   }
 
   return newStatus;
@@ -577,7 +587,7 @@ function cleanReplyArea(textarea: HTMLTextAreaElement): void {
   }
 }
 
-function mentionUser(event: MouseEvent): void {
+function mentionUser(event: MouseEvent, getMessage: MessageGetter): void {
   const target = event.currentTarget as HTMLElement | null;
   const text = readElementText(target).trim();
   if (text === '') {
@@ -586,7 +596,7 @@ function mentionUser(event: MouseEvent): void {
 
   if (!event.ctrlKey) {
     void navigator.clipboard.writeText(text);
-    showToastMessage('✔ Ник скопирован в буфер обмена.');
+    showToastMessage(getMessage('toast_nick_copied'));
     return;
   }
 
@@ -608,7 +618,7 @@ function mentionUser(event: MouseEvent): void {
 
   const toggleButton = document.getElementById('toggleFBO');
   if (toggleButton != null) {
-    toggleButton.textContent = 'Скрыть ФБО';
+    toggleButton.textContent = getMessage('fbo_hide');
   }
 
   postArea.focus();
@@ -649,7 +659,7 @@ function prepareForContextMenu(
   element.style.cursor = 'default';
 }
 
-function addConfigMenu(runtime: RuntimeBridge): void {
+function addConfigMenu(runtime: RuntimeBridge, getMessage: MessageGetter): void {
   if (document.getElementById('plugin-config-menu') != null) {
     return;
   }
@@ -664,7 +674,7 @@ function addConfigMenu(runtime: RuntimeBridge): void {
   configMenu.style.paddingLeft = '.5em';
   configMenu.style.color = 'Honeydew';
   configMenu.style.cursor = 'pointer';
-  configMenu.innerHTML = `&#x2699;&#xFE0F; настройки v${runtime.manifest.version}`;
+  configMenu.innerHTML = `&#x2699;&#xFE0F; ${getMessage('config_menu_version', runtime.manifest.version)}`;
   configMenu.addEventListener('click', () => {
     void runtime.browser.runtime.openOptionsPage();
   });
@@ -675,7 +685,8 @@ function addConfigMenu(runtime: RuntimeBridge): void {
 
 function setupResponseFormToggle(
   settings: ExtensionSettings,
-  postArea: HTMLTextAreaElement | null
+  postArea: HTMLTextAreaElement | null,
+  getMessage: MessageGetter
 ): void {
   if (settings.response_form !== 'toggle' || postArea == null) {
     return;
@@ -695,11 +706,11 @@ function setupResponseFormToggle(
     if (firstCellIsEmpty) {
       buttonCell.style.width = '50%';
     }
-    buttonCell.innerHTML = '<button id="toggleFBO" type="button">Скрыть</button>';
+    buttonCell.innerHTML = `<button id="toggleFBO" type="button">${getMessage('fbo_hide')}</button>`;
   } else {
     replier.insertAdjacentHTML(
       'beforebegin',
-      '<button id="toggleFBO" type="button" style="margin:10px 0">Скрыть</button>'
+      `<button id="toggleFBO" type="button" style="margin:10px 0">${getMessage('fbo_hide')}</button>`
     );
   }
 
@@ -709,7 +720,7 @@ function setupResponseFormToggle(
   }
 
   const updateButtonText = () => {
-    toggleButton.textContent = replier.style.display === 'none' ? 'Показать ФБО' : 'Скрыть ФБО';
+    toggleButton.textContent = replier.style.display === 'none' ? getMessage('fbo_show') : getMessage('fbo_hide');
   };
 
   const checkFBO = () => {
@@ -743,27 +754,27 @@ function beforeFocusReplyArea(): void {
   postArea.selectionEnd = length;
 }
 
-function insertPartialQuote(event: Event): void {
+function insertPartialQuote(event: Event, getMessage: MessageGetter): void {
   event.preventDefault();
 
   const info = getSelectionInfo();
   if (info == null) {
-    alert((event.currentTarget as HTMLElement | null)?.title ?? 'Ничего не выделено!');
+    alert((event.currentTarget as HTMLElement | null)?.title ?? getMessage('selection_empty'));
     return;
   }
 
   const trigger = event.currentTarget as HTMLElement | null;
   if (info.ownerTable == null) {
-    alert('Выделенный текст не принадлежит сообщению ленты!');
+    alert(getMessage('selection_not_from_feed'));
     return;
   }
 
   if (info.ownerTable.id !== (trigger?.dataset.tableId ?? '')) {
-    alert('Выделенный текст не принадлежит цитируемому сообщению!');
+    alert(getMessage('selection_not_from_quoted_message'));
     return;
   }
 
-  let quoteTitle = '[color=red][i]Цитируемый не найден![/i][/color]';
+  let quoteTitle = `[color=red][i]${getMessage('quoted_user_not_found')}[/i][/color]`;
 
   if (info.element.tagName === 'DIV' && info.element.classList.contains('postcolor')) {
     const nameElement = info.ownerTable.querySelector<HTMLElement>('span.normalname, span.unreg');
@@ -788,13 +799,13 @@ function insertPartialQuote(event: Event): void {
   } else if (info.element.tagName === 'TD' && info.element.id === 'QUOTE') {
     const authorCell = getFirstCellInPreviousRow(info.element as HTMLTableCellElement);
     const match = readElementText(authorCell).match(/\(([^)]+)\)/);
-    quoteTitle = match?.[1]?.trim() ?? '[i]Цитируемый не был указан ранее[/i]';
+    quoteTitle = match?.[1]?.trim() ?? `[i]${getMessage('quoted_user_missing')}[/i]`;
   }
 
   const insertedQuote = `[quote=${quoteTitle}]${info.bbcode}[/quote]`;
   const postArea = getPostArea();
   if (postArea == null) {
-    alert('Не найдена форма быстрого ответа (включите её в настройках профиля).');
+    alert(getMessage('reply_form_not_found'));
     return;
   }
 
@@ -954,7 +965,7 @@ function adjustScrollTopElement(settings: ExtensionSettings): void {
   }
 }
 
-function addReplyUploadFeature(): void {
+function addReplyUploadFeature(getMessage: MessageGetter): void {
   const replier = document.getElementById('REPLIER');
   if (replier == null || replier.querySelector('input[name=FILE_UPLOAD]') != null) {
     return;
@@ -971,7 +982,7 @@ function addReplyUploadFeature(): void {
   cell.style.background = 'whitesmoke';
   cell.style.borderTop = '1px solid gainsboro';
   cell.innerHTML =
-    '<div class="reply-form"><div class="reply-form-synteticleft-block"></div><div class="reply-form-textarea-wrap"><b style="padding-right:.5em;">Закачать картинку:</b><input type="hidden" name="MAX_FILE_SIZE" value="3145728"><input class="textinput" type="file" size="30" name="FILE_UPLOAD"><br><input type="checkbox" name="enabletag" id="enabletag" class="checkbox" value="1" checked="checked"><label for="enabletag"><strong>Включить</strong> добавление логотипа сайта</label></div><div class="reply-form-right-block" style="vertical-align:middle;text-align:center;"><img id="imghaha_up" src="//www.yaplakal.com/html/emoticons/brake.gif"><br/><img id="imghaha_bot" src="//www.yaplakal.com/html/emoticons/rulez.gif"></div></div>';
+    `<div class="reply-form"><div class="reply-form-synteticleft-block"></div><div class="reply-form-textarea-wrap"><b style="padding-right:.5em;">${getMessage('reply_upload_image')}</b><input type="hidden" name="MAX_FILE_SIZE" value="3145728"><input class="textinput" type="file" size="30" name="FILE_UPLOAD"><br><input type="checkbox" name="enabletag" id="enabletag" class="checkbox" value="1" checked="checked"><label for="enabletag"><strong>${getMessage('reply_enable_logo_prefix')}</strong> ${getMessage('reply_enable_logo')}</label></div><div class="reply-form-right-block" style="vertical-align:middle;text-align:center;"><img id="imghaha_up" src="//www.yaplakal.com/html/emoticons/brake.gif"><br/><img id="imghaha_bot" src="//www.yaplakal.com/html/emoticons/rulez.gif"></div></div>`;
 
   const textarea = document.querySelector<HTMLTextAreaElement>('textarea#Post');
   textarea?.addEventListener('click', hideHaha);
@@ -991,7 +1002,7 @@ function hideElement(id: string): void {
   }
 }
 
-function setBetterCopyMessageLink(): void {
+function setBetterCopyMessageLink(getMessage: MessageGetter): void {
   document.querySelectorAll<HTMLAnchorElement>('a.anchor').forEach((anchor) => {
     anchor.addEventListener(
       'click',
@@ -1004,7 +1015,7 @@ function setBetterCopyMessageLink(): void {
         const table = currentTarget.closest<HTMLTableElement>('table.entry-table');
         const nick = table?.dataset.nikName ?? '';
         void navigator.clipboard.writeText(`${currentTarget.href}\n${nick} - `);
-        showToastMessage('✔ Ссылка скопирована в буфер обмена.');
+        showToastMessage(getMessage('toast_link_copied'));
       },
       true
     );
@@ -1032,7 +1043,7 @@ function setUserFilterForQuotes(settings: ExtensionSettings): void {
   });
 }
 
-function renderSmilesTable(settings: ExtensionSettings): HTMLElement | null {
+function renderSmilesTable(settings: ExtensionSettings, getMessage: MessageGetter): HTMLElement | null {
   if (!settings.smilies_show_all) {
     return null;
   }
@@ -1047,7 +1058,7 @@ function renderSmilesTable(settings: ExtensionSettings): HTMLElement | null {
   details.style.width = '100%';
 
   const summary = document.createElement('summary');
-  summary.textContent = 'Смайлики';
+  summary.textContent = getMessage('smilies_title');
   summary.style.fontSize = '.9em';
   summary.style.cursor = 'pointer';
   summary.style.paddingBottom = '.25em';

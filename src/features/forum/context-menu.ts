@@ -48,7 +48,8 @@ export function calculateMenuPosition(input: MenuViewportInput): MenuPosition {
 export function attachContextMenus(
   config: ContextMenuConfig,
   doc: Document = document,
-  win: Window = window
+  win: Window = window,
+  tooltipText = ''
 ): void {
   if (doc.getElementById(OVERLAY_ID) == null) {
     const overlay = doc.createElement('div');
@@ -66,7 +67,7 @@ export function attachContextMenus(
     const tooltip = doc.createElement('div');
     tooltip.id = TOOLTIP_ID;
     tooltip.className = 'ext-ctx-tooltip';
-    tooltip.textContent = 'ПКМ';
+    tooltip.textContent = tooltipText;
     tooltip.style.opacity = '0';
     doc.body.append(tooltip);
 

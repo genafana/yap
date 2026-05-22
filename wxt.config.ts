@@ -45,12 +45,16 @@ export default defineConfig({
       'public/**',
       'scripts/**',
       'src/**',
-      'tests/**',
       'package.json',
       'tsconfig.json',
       'vitest.config.ts',
       'web-ext.config.ts',
       'wxt.config.ts'
+    ],
+    excludeSources: [
+      'orig-poc-src/**',
+      'tmp/**',
+      'tests/**'
     ]
   }
 });

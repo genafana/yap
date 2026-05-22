@@ -18,6 +18,36 @@
 
 3. Проверить содержимое `.output/`.
 
+## GitHub Actions в репозитории
+
+Сейчас release automation в репозитории разделена на два уровня:
+
+- `ci.yml` — проверка кода на каждом push / pull request;
+- `release-artifacts.yml` — сборка релизных ZIP-артефактов и создание draft release по тегам `v*`;
+- `submit-stores.yml` — submit в Chrome / Firefox / Edge через store APIs.
+
+### Как запускается release
+
+#### Автоматически
+
+- push тега вида `v1.2.3`:
+  - собирает артефакты;
+  - создаёт draft release;
+  - запускает submit в Chrome / Firefox / Edge.
+
+#### Вручную
+
+`submit-stores.yml` можно запускать через `workflow_dispatch`:
+
+- `target`: `all`, `chrome`, `firefox`, `edge`
+- `dry_run`: `true/false`
+
+Это удобно для:
+
+- проверки credentials;
+- ручной переотправки;
+- первого тестирования automation без публикации.
+
 ## Chrome Web Store
 
 ### Первый выпуск
@@ -42,6 +72,13 @@ npm run submit:init
 
 Локально появится `.env.submit`, который нужно заполнить store credentials и **не коммитить**.
 
+Для GitHub Actions понадобятся environment secrets:
+
+- `CHROME_EXTENSION_ID`
+- `CHROME_CLIENT_ID`
+- `CHROME_CLIENT_SECRET`
+- `CHROME_REFRESH_TOKEN`
+
 ## Microsoft Edge Add-ons
 
 1. Зарегистрироваться в Partner Center.
@@ -53,6 +90,12 @@ npm run submit:init
    ```
 
 4. Загрузить ZIP в Edge Add-ons.
+
+Для GitHub Actions понадобятся:
+
+- `EDGE_PRODUCT_ID`
+- `EDGE_CLIENT_ID`
+- `EDGE_API_KEY`
 
 ## Opera Add-ons
 
@@ -79,6 +122,12 @@ npm run submit:init
    ```
 
 4. Для review также используется source archive, который собирает WXT.
+
+Для GitHub Actions понадобятся:
+
+- `FIREFOX_EXTENSION_ID`
+- `FIREFOX_JWT_ISSUER`
+- `FIREFOX_JWT_SECRET`
 
 ### Подпись
 
@@ -113,6 +162,18 @@ Safari не публикуется через WXT автоматически. П
    - entitlements / capabilities при необходимости.
 5. Выполнить archive и distribution через Xcode / App Store Connect.
 
+### Статус Safari в текущем проекте
+
+Safari сейчас **не входит** в автоматический submit pipeline.
+
+Это сознательное ограничение:
+
+- WXT не поддерживает automated Safari publishing;
+- Safari требует Apple-specific packaging/signing flow;
+- для полного CI/CD нужен отдельный macOS workflow с Xcode / App Store Connect tooling.
+
+То есть Safari сейчас — **TODO / manual lane**.
+
 ## Где хранить секреты
 
 Никогда не хранить store secrets в git.
@@ -123,6 +184,22 @@ Safari не публикуется через WXT автоматически. П
 - GitHub Actions secrets;
 - organization-level secrets.
 
+### Рекомендуемая схема в GitHub
+
+Создать environments:
+
+- `chrome-store`
+- `firefox-store`
+- `edge-store`
+
+И класть store credentials именно туда.
+
+Плюсы:
+
+- изоляция production secrets;
+- возможность approval перед submit;
+- более понятный audit trail.
+
 ## Рекомендуемый порядок настройки подписей
 
 1. Создать карточки расширения во всех store вручную.
@@ -130,3 +207,11 @@ Safari не публикуется через WXT автоматически. П
 3. Заполнить локальный `.env.submit`.
 4. Продублировать значения в CI secrets.
 5. Проверить automation на тестовом обновлении.
+
+## Минимальный production-ready порядок действий
+
+1. вручную создать listing в Chrome / Edge / AMO;
+2. получить credentials;
+3. создать GitHub environments и secrets;
+4. запустить `submit-stores.yml` в `dry_run=true`;
+5. выпустить тег `v*` и проверить draft release + submit jobs.

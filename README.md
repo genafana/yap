@@ -93,6 +93,14 @@ npm run build:safari
 npm run package:safari
 ```
 
+## GitHub Actions release flow
+
+- `ci.yml` — typecheck, unit tests, build
+- `release-artifacts.yml` — build ZIP artifacts and create a draft GitHub Release on `v*` tags
+- `submit-stores.yml` — submit Chrome / Firefox / Edge packages to stores
+
+Store submission requires GitHub **Environments** and secrets configured in the repository settings. Safari remains a separate manual/TODO release lane.
+
 ## Checks
 
 ```bash

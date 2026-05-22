@@ -1,0 +1,188 @@
+name: Submit Stores
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Browser store target
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - chrome
+          - firefox
+          - edge
+      dry_run:
+        description: Validate credentials without uploading/submitting
+        required: true
+        default: true
+        type: boolean
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: submit-stores-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify project
+        run: |
+          npm run typecheck
+          npm run test:unit
+
+      - name: Build and zip
+        run: |
+          npm run build
+          npm run zip
+
+      - name: Upload store packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-submit-packages
+          if-no-files-found: error
+          path: .output/*.zip
+
+  submit-chrome:
+    name: Submit Chrome
+    needs: package
+    if: github.event_name == 'push' || github.event.inputs.target == 'all' || github.event.inputs.target == 'chrome'
+    runs-on: ubuntu-latest
+    environment: chrome-store
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download store packages
+        uses: actions/download-artifact@v4
+        with:
+          name: store-submit-packages
+          path: .output
+
+      - name: Submit to Chrome Web Store
+        shell: bash
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          CHROME_ZIP="$(ls .output/*-chrome.zip | head -n 1)"
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+
+          npx wxt submit $DRY_RUN_FLAG --chrome-zip "$CHROME_ZIP"
+
+  submit-firefox:
+    name: Submit Firefox
+    needs: package
+    if: github.event_name == 'push' || github.event.inputs.target == 'all' || github.event.inputs.target == 'firefox'
+    runs-on: ubuntu-latest
+    environment: firefox-store
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download store packages
+        uses: actions/download-artifact@v4
+        with:
+          name: store-submit-packages
+          path: .output
+
+      - name: Submit to Firefox Add-ons
+        shell: bash
+        env:
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          set -euo pipefail
+          FIREFOX_ZIP="$(ls .output/*-firefox.zip | head -n 1)"
+          FIREFOX_SOURCES_ZIP="$(ls .output/*-sources.zip | head -n 1)"
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+
+          npx wxt submit $DRY_RUN_FLAG --firefox-zip "$FIREFOX_ZIP" --firefox-sources-zip "$FIREFOX_SOURCES_ZIP"
+
+  submit-edge:
+    name: Submit Edge
+    needs: package
+    if: github.event_name == 'push' || github.event.inputs.target == 'all' || github.event.inputs.target == 'edge'
+    runs-on: ubuntu-latest
+    environment: edge-store
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download store packages
+        uses: actions/download-artifact@v4
+        with:
+          name: store-submit-packages
+          path: .output
+
+      - name: Submit to Edge Add-ons
+        shell: bash
+        env:
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+        run: |
+          set -euo pipefail
+          EDGE_ZIP="$(ls .output/*-edge.zip | head -n 1)"
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+
+          npx wxt submit $DRY_RUN_FLAG --edge-zip "$EDGE_ZIP"

@@ -33,7 +33,7 @@ export default defineConfig({
     },
     web_accessible_resources: [
       {
-        resources: ['config.json', 'groups.json'],
+        resources: ['config.json', 'groups*.json'],
         matches: hostPermissions
       }
     ],

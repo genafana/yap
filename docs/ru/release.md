@@ -6,7 +6,7 @@
 
 ## Подготовка релиза
 
-1. Обновить версию в `wxt.config.ts`.
+1. Не править версию вручную в `wxt.config.ts`: в проекте один источник правды — `package.json`.
 2. Прогнать:
 
    ```bash
@@ -21,25 +21,28 @@
 
 ## GitHub Actions в репозитории
 
-Сейчас release automation в репозитории разделена на два уровня:
+Сейчас release automation в репозитории устроена так:
 
 - `ci.yml` — `lint`, `typecheck`, `test:unit` и `build` на каждом push / pull request;
-- `release-artifacts.yml` — сборка релизных ZIP-артефактов и создание draft release по тегам `v*`;
-- `submit-stores.yml` — submit в Chrome / Firefox / Edge через store APIs.
+- `release-artifacts.yml` — semantic-release на каждом push в `main`, автоматический расчёт новой версии по commit history, создание release commit/tag/GitHub Release, сборка ZIP-артефактов и submit в Chrome / Firefox / Edge;
+- `submit-stores.yml` — ручной rebuild/resubmit для выбранного `ref`.
 
 ### Как запускается release
 
 #### Автоматически
 
-- push тега вида `v1.2.3`:
+- push / merge в `main`:
+  - semantic-release анализирует **все коммиты в истории `main` с момента последнего release tag**;
+  - вычисляет semver bump;
+  - создаёт release commit, тег вида `v1.2.3` и GitHub Release;
   - собирает артефакты;
-  - создаёт draft release;
   - запускает submit в Chrome / Firefox / Edge.
 
 #### Вручную
 
 `submit-stores.yml` можно запускать через `workflow_dispatch`:
 
+- `ref`: git ref, который нужно собрать и отправить;
 - `target`: `all`, `chrome`, `firefox`, `edge`
 - `dry_run`: `true/false`
 
@@ -47,7 +50,20 @@
 
 - проверки credentials;
 - ручной переотправки;
-- первого тестирования automation без публикации.
+- первого тестирования automation без публикации;
+- повторной отправки уже выпущенного тега или конкретного commit/tag.
+
+## Commit messages и merge policy
+
+Semantic-release корректно работает только по commit history в `main`.
+
+Практические правила:
+
+1. commit messages должны следовать Conventional Commits (`feat:`, `fix:`, `feat!:`, `BREAKING CHANGE:` и т.д.);
+2. если нужен расчёт версии **по всем коммитам, вошедшим в merge**, нельзя использовать squash merge;
+3. нужно использовать merge/rebase, при которых в истории `main` остаются сами commit messages.
+
+Иначе при squash в `main` останется только один squash commit, и semantic-release сможет анализировать только его сообщение.
 
 ## Chrome Web Store
 
@@ -217,4 +233,5 @@ Safari сейчас **не входит** в автоматический submit
 2. получить credentials;
 3. создать GitHub environments и secrets;
 4. запустить `submit-stores.yml` в `dry_run=true`;
-5. выпустить тег `v*` и проверить draft release + submit jobs.
+5. мержить изменения в `main` только с Conventional Commit messages без squash;
+6. дождаться автоматического release workflow и проверить GitHub Release + submit jobs.

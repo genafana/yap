@@ -98,15 +98,20 @@ npm run package:safari
 ## GitHub Actions release flow
 
 - `ci.yml` — run `npm ci`, lint, typecheck, unit tests, and full build on pushes and pull requests
-- `release-artifacts.yml` — build ZIP artifacts, upload them as workflow artifacts, and create a draft GitHub Release on `v*` tags
-- `submit-stores.yml` — build once and submit Chrome / Firefox / Edge packages through store APIs on `v*` tags or manual dispatch
+- `release-artifacts.yml` — run semantic-release on pushes to `main`, create the release commit/tag/GitHub Release, build ZIP artifacts from the new release tag, attach them to the GitHub Release, and submit Chrome / Firefox / Edge packages through store APIs
+- `submit-stores.yml` — manual rebuild/resubmit workflow for a chosen git ref and chosen target stores
 
 Release behavior:
 
-- push a tag like `v0.1.0` or `v1.2.3` → create draft GitHub Release + run Chrome / Firefox / Edge submit jobs
-- run `submit-stores.yml` manually → choose `target` (`all`, `chrome`, `firefox`, `edge`) and `dry_run`
+- merge or push commits to `main` → semantic-release analyzes all commits in `main` since the last release tag and computes the next semantic version
+- if a release is needed, the workflow creates a `vX.Y.Z` tag and GitHub Release automatically, then builds and submits the new store packages
+- run `submit-stores.yml` manually → choose `ref`, `target` (`all`, `chrome`, `firefox`, `edge`) and `dry_run`
 
-> Plain tags like `0.1.0` do not trigger release workflows. Use the `v*` format.
+Important release facts:
+
+- `package.json` is the single source of truth for the extension version; WXT derives the manifest version from it
+- semantic-release relies on Conventional Commits in `main` history
+- if you want release type calculation from all merged commits, merge with merge/rebase instead of squash; with squash, only the squash commit message remains in `main`
 
 Store submission requires GitHub **Environments** and secrets configured in repository settings:
 
@@ -138,6 +143,8 @@ Browser differences are handled through:
 - WXT browser targets (`chrome`, `firefox`, `edge`, `opera`, `safari`)
 - browser-specific manifest fields such as `browser_specific_settings.gecko`
 - browser-specific build/package commands instead of manually maintained duplicate manifests
+
+Extension versioning is **not** hardcoded in `wxt.config.ts`; WXT reads it from `package.json`.
 
 ## Publishing and signing
 
@@ -265,7 +272,8 @@ Recommended release hardening:
 3. keep `.env.submit` local only
 4. mirror those values into `chrome-store`, `firefox-store`, and `edge-store`
 5. test `submit-stores.yml` with `dry_run=true`
-6. publish with a `v*` tag such as `v0.1.0` once credentials are confirmed
+6. use Conventional Commits on changes merged to `main`
+7. let `release-artifacts.yml` create `v*` tags automatically from `main`
 
 ## Project structure
 

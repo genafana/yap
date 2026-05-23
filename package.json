@@ -16,6 +16,7 @@
     "dev:opera": "wxt -b opera",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "lint:commits": "commitlint --from HEAD~1 --to HEAD",
     "build": "node ./scripts/build-all.mjs",
     "build:chrome": "wxt build -b chrome",
     "build:firefox": "wxt build -b firefox",
@@ -31,16 +32,23 @@
     "test:unit": "vitest run",
     "package:safari": "bash ./scripts/package-safari.sh",
     "submit:init": "wxt submit init",
-    "submit:stores": "wxt submit"
+    "submit:stores": "wxt submit",
+    "release:ci": "node ./scripts/run-semantic-release.mjs",
+    "release:dry-run": "semantic-release --dry-run"
   },
   "dependencies": {
     "webextension-polyfill": "^0.12.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
     "@eslint/js": "^10.0.1",
+    "@semantic-release/exec": "^7.1.0",
+    "@semantic-release/git": "^10.0.1",
     "@types/node": "^24.1.0",
     "eslint": "^10.4.0",
     "globals": "^17.6.0",
+    "semantic-release": "^25.0.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.59.4",
     "vitest": "^3.2.4",

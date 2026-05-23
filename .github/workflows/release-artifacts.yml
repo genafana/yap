@@ -1,24 +1,31 @@
-name: Release Artifacts
+name: Release
 
 on:
-  workflow_dispatch:
   push:
-    tags:
-      - 'v*'
-
-permissions:
-  contents: write
+    branches:
+      - main
 
 concurrency:
-  group: release-artifacts-${{ github.ref }}
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  package:
+  release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      released: ${{ steps.semantic-release.outputs.released }}
+      version: ${{ steps.semantic-release.outputs.version }}
+      tag: ${{ steps.semantic-release.outputs.tag }}
+      git_head: ${{ steps.semantic-release.outputs.git_head }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -31,8 +38,37 @@ jobs:
 
       - name: Verify project
         run: |
+          npm run lint
           npm run typecheck
           npm run test:unit
+
+      - name: Semantic release
+        id: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run release:ci
+
+  package:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build and zip
         run: |
@@ -48,10 +84,129 @@ jobs:
             .output/*.zip
             .output/**/manifest.json
 
-      - name: Create draft GitHub release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ needs.release.outputs.tag }}" .output/*.zip --clobber
+
+  submit-chrome:
+    name: Submit Chrome
+    needs: [release, package]
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    environment: chrome-store
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
-          draft: true
-          generate_release_notes: true
-          files: .output/*.zip
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download store packages
+        uses: actions/download-artifact@v4
+        with:
+          name: webextension-artifacts
+          path: .output
+
+      - name: Submit to Chrome Web Store
+        shell: bash
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+        run: |
+          set -euo pipefail
+          CHROME_ZIP="$(ls .output/*-chrome.zip | head -n 1)"
+          npx wxt submit --chrome-zip "$CHROME_ZIP"
+
+  submit-firefox:
+    name: Submit Firefox
+    needs: [release, package]
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    environment: firefox-store
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download store packages
+        uses: actions/download-artifact@v4
+        with:
+          name: webextension-artifacts
+          path: .output
+
+      - name: Submit to Firefox Add-ons
+        shell: bash
+        env:
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          set -euo pipefail
+          FIREFOX_ZIP="$(ls .output/*-firefox.zip | head -n 1)"
+          FIREFOX_SOURCES_ZIP="$(ls .output/*-sources.zip | head -n 1)"
+          npx wxt submit --firefox-zip "$FIREFOX_ZIP" --firefox-sources-zip "$FIREFOX_SOURCES_ZIP"
+
+  submit-edge:
+    name: Submit Edge
+    needs: [release, package]
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    environment: edge-store
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download store packages
+        uses: actions/download-artifact@v4
+        with:
+          name: webextension-artifacts
+          path: .output
+
+      - name: Submit to Edge Add-ons
+        shell: bash
+        env:
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+        run: |
+          set -euo pipefail
+          EDGE_ZIP="$(ls .output/*-edge.zip | head -n 1)"
+          npx wxt submit --edge-zip "$EDGE_ZIP"

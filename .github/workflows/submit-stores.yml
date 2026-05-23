@@ -3,6 +3,11 @@ name: Submit Stores
 on:
   workflow_dispatch:
     inputs:
+      ref:
+        description: Git ref to build and submit
+        required: true
+        default: main
+        type: string
       target:
         description: Browser store target
         required: true
@@ -18,15 +23,12 @@ on:
         required: true
         default: true
         type: boolean
-  push:
-    tags:
-      - 'v*'
 
 permissions:
   contents: read
 
 concurrency:
-  group: submit-stores-${{ github.ref }}
+  group: submit-stores-${{ github.event.inputs.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -35,6 +37,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -65,12 +70,14 @@ jobs:
   submit-chrome:
     name: Submit Chrome
     needs: package
-    if: github.event_name == 'push' || github.event.inputs.target == 'all' || github.event.inputs.target == 'chrome'
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'chrome'
     runs-on: ubuntu-latest
     environment: chrome-store
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -107,12 +114,14 @@ jobs:
   submit-firefox:
     name: Submit Firefox
     needs: package
-    if: github.event_name == 'push' || github.event.inputs.target == 'all' || github.event.inputs.target == 'firefox'
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'firefox'
     runs-on: ubuntu-latest
     environment: firefox-store
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -149,12 +158,14 @@ jobs:
   submit-edge:
     name: Submit Edge
     needs: package
-    if: github.event_name == 'push' || github.event.inputs.target == 'all' || github.event.inputs.target == 'edge'
+    if: github.event.inputs.target == 'all' || github.event.inputs.target == 'edge'
     runs-on: ubuntu-latest
     environment: edge-store
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4

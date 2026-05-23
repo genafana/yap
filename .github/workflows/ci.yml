@@ -21,9 +21,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
-
       - name: Determine commit range
         id: range
         shell: bash
@@ -43,8 +40,8 @@ jobs:
           echo "from=$BEFORE" >> "$GITHUB_OUTPUT"
           echo "to=${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
-      - name: Lint commit messages
-        run: npx commitlint --from "${{ steps.range.outputs.from }}" --to "${{ steps.range.outputs.to }}" --verbose
+      - name: Run commit checks
+        run: bash ./scripts/run-ci-checks.sh --commitlint-only --from "${{ steps.range.outputs.from }}" --to "${{ steps.range.outputs.to }}"
 
   verify:
     runs-on: ubuntu-latest
@@ -59,17 +56,5 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Unit tests
-        run: npm run test:unit
-
-      - name: Build all targets
-        run: npm run build
+      - name: Run CI verify checks
+        run: bash ./scripts/run-ci-checks.sh --verify-only

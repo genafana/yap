@@ -84,6 +84,24 @@ Bundled defaults лежат в `public/config.json`.
 
 Если рядом с установленным unpacked-расширением есть файл `groups.json`, runtime загрузит его как обычный JSON-документ. Если файла нет, расширение продолжит работать без пользовательских групп.
 
+## Локальный запуск CI-проверок
+
+Перед комитом и пушем можно локально запускать тот же набор проверок, что и в workflow `CI`.
+
+Linux/macOS:
+
+```bash
+bash ./scripts/run-ci-checks.sh
+```
+
+Windows:
+
+```bat
+scripts\run-ci-checks.bat
+```
+
+Скрипт сам делает `npm ci`, затем запускает verify-набор (`lint`, `typecheck`, `test:unit`, `build`, `lint:firefox`). Если доступен диапазон коммитов, он дополнительно запускает `commitlint`.
+
 ## Где находится основная логика интерфейса
 
 - page lifecycle и базовые helpers — `src/features/content-foundation/`;
@@ -94,4 +112,4 @@ Bundled defaults лежат в `public/config.json`.
 1. выносить чистую логику в функции, пригодные для unit tests;
 2. не дублировать browser-specific manifest-файлы;
 3. не хранить store credentials в репозитории;
-4. проверять изменения минимум через `lint`, `typecheck`, `test:unit`, `build`.
+4. перед пушем предпочитать `scripts/run-ci-checks.sh` или `scripts\run-ci-checks.bat`, чтобы локально повторить CI.

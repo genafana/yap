@@ -56,6 +56,24 @@ npm run dev:edge
 npm run dev:opera
 ```
 
+## Run CI checks locally
+
+To run the same checks as the `CI` workflow locally:
+
+**Linux/macOS**
+
+```bash
+bash ./scripts/run-ci-checks.sh
+```
+
+**Windows**
+
+```bat
+scripts\run-ci-checks.bat
+```
+
+The script installs dependencies with `npm ci`, runs the verify suite, and runs commitlint when a commit range is available.
+
 Optional custom groups:
 
 - The distributed extension no longer bundles `groups.json`.
@@ -104,7 +122,7 @@ npm run package:safari
 
 ## GitHub Actions release flow
 
-- `ci.yml` — run `npm ci`, lint, typecheck, unit tests, and full build on pushes and pull requests
+- `ci.yml` — run commitlint plus the shared CI verification script on pushes and pull requests
 - `release-artifacts.yml` — run semantic-release on pushes to `main`, create the release commit/tag/GitHub Release, build ZIP artifacts from the new release tag, attach them to the GitHub Release, and submit configured store packages
 - `submit-stores.yml` — manual rebuild/resubmit workflow for a chosen git ref and chosen target stores
 

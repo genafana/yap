@@ -22,13 +22,21 @@ Before changing code:
 2. Reuse existing helpers and patterns before adding new abstractions.
 3. Keep Firefox, Chrome, and Edge behavior aligned unless browser-specific handling is genuinely required.
 
-After changing code, always run:
+After changing code, always prefer running the CI-equivalent verification script:
 
 ```bash
+bash ./scripts/run-ci-checks.sh --verify-only
+```
+
+This script is the source of truth for the CI verify job and runs:
+
+```bash
+npm ci
 npm run lint
 npm run typecheck
 npm run test:unit
 npm run build
+npm run lint:firefox
 ```
 
 Run `npm run zip` when the change affects packaging, manifests, release artifacts, or store submission behavior.

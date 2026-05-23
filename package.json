@@ -28,6 +28,7 @@
     "zip:firefox": "wxt zip -b firefox",
     "zip:edge": "wxt zip -b edge",
     "zip:opera": "wxt zip -b opera",
+    "lint:firefox": "web-ext lint --source-dir .output/firefox-mv3 --warnings-as-errors",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "package:safari": "bash ./scripts/package-safari.sh",
@@ -52,6 +53,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.59.4",
     "vitest": "^3.2.4",
+    "web-ext": "^8.10.0",
     "wxt": "^0.20.26"
   }
 }

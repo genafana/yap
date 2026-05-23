@@ -37,6 +37,23 @@
           </table>
         </div>
       </form>
+
+      <section class="card tags-card">
+        <h2 data-i18n="tags_section_heading">Tags &amp; Users</h2>
+        <p data-i18n="tags_section_description"></p>
+
+        <div class="actions tags-actions">
+          <h3 data-i18n="tags_import_heading">Import</h3>
+          <label class="tags-replace-label">
+            <input type="checkbox" id="tags-import-replace" />
+            <span data-i18n="tags_import_replace">Replace existing data</span>
+          </label>
+          <input type="file" id="tags-import-file" accept=".json" style="display:none" />
+          <button id="tags-import-btn" type="button" data-i18n="tags_import_button">Import file</button>
+          <button id="tags-export-btn" type="button" data-i18n="tags_export_button">Export tags &amp; users</button>
+          <span id="tags-status" role="status" aria-live="polite"></span>
+        </div>
+      </section>
     </main>
   </body>
 </html>

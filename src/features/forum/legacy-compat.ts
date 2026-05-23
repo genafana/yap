@@ -1,6 +1,6 @@
 import type Browser from 'webextension-polyfill';
 
-import type { UserGroupEntry, UserGroupLookup } from '../../utils/groups';
+import type { UserTagsLookup } from '../../utils/groups';
 import type { MessageGetter } from '../../utils/i18n';
 import type { ExtensionSettings } from '../../utils/settings/defaults';
 import { reduceRightColumn } from '../content-foundation/dom';
@@ -24,7 +24,7 @@ interface RuntimeBridge {
 
 interface EnhanceOptions {
   settings: ExtensionSettings;
-  userGroups: UserGroupLookup;
+  userTagsLookup: UserTagsLookup;
   filteredUserName: string | null;
   runtime: RuntimeBridge;
   getMessage: MessageGetter;
@@ -80,7 +80,7 @@ export function shouldHideFilteredTable(
 }
 
 export async function enhanceLegacyForumPage(options: EnhanceOptions): Promise<void> {
-  const { settings, userGroups, filteredUserName, runtime, getMessage } = options;
+  const { settings, userTagsLookup, filteredUserName, runtime, getMessage } = options;
 
   addConfigMenu(runtime, getMessage);
   initContextMenu(settings, runtime, getMessage);
@@ -98,7 +98,7 @@ export async function enhanceLegacyForumPage(options: EnhanceOptions): Promise<v
   for (const table of entryTables) {
     transformEntryTable(table, {
       settings,
-      userGroups,
+      userTagsLookup,
       filteredUserName,
       getMessage
     });
@@ -197,12 +197,12 @@ function transformEntryTable(
   originalTable: HTMLTableElement,
   options: {
     settings: ExtensionSettings;
-    userGroups: UserGroupLookup;
+    userTagsLookup: UserTagsLookup;
     filteredUserName: string | null;
     getMessage: MessageGetter;
   }
 ): void {
-  const { settings, userGroups, filteredUserName, getMessage } = options;
+  const { settings, userTagsLookup, filteredUserName, getMessage } = options;
   const rows = originalTable.rows;
   const currentUser = readCurrentUser();
 
@@ -215,9 +215,9 @@ function transformEntryTable(
     userInfoRow.querySelector<HTMLElement>('span.normalname') ??
     userInfoRow.querySelector<HTMLElement>('span.unreg');
   const currentUserName = userNameElement == null ? null : readElementText(userNameElement).trim();
-  const userGroup = currentUserName == null ? undefined : userGroups[currentUserName];
+  const userTags = currentUserName == null ? [] : (userTagsLookup[currentUserName] ?? []);
 
-  if (userGroup?.ignore) {
+  if (userTags.some((t) => t.ignore === true)) {
     originalTable.style.display = 'none';
     return;
   }
@@ -347,7 +347,7 @@ function transformEntryTable(
   const postRank = userInfoRow.querySelector<HTMLElement>('div[id^="p_rank"]');
   const userStatus = userInfoRow.querySelector<HTMLElement>('div.postdetails');
   if (userStatus != null) {
-    replaceElementLines(userStatus, buildUserStatus(userStatus, userNameElement, userGroup, settings, getMessage));
+    replaceElementLines(userStatus, buildUserStatus(userStatus, userNameElement, settings, getMessage));
   }
 
   const postHeaderRow = getRow(rows, 'postHeader') as HTMLTableRowElement | null;
@@ -386,7 +386,7 @@ function transformEntryTable(
   leftCell.style.maxWidth = settings.left_col_width;
   leftCell.style.overflowX = 'auto';
   leftCell.style.borderRight = settings.left_col_right_border;
-  leftCell.style.background = userGroup?.color ?? settings.title_bg_color;
+  leftCell.style.background = settings.title_bg_color;
 
   const userWrapper = document.createElement('div');
   leftCell.append(userWrapper);
@@ -438,6 +438,21 @@ function transformEntryTable(
 
   if (userLabel != null) {
     userWrapper.append(document.createElement('br'), userLabel);
+  }
+
+  if (userTags.length > 0) {
+    const tagsContainer = document.createElement('div');
+    tagsContainer.className = 'user-tags';
+    for (const tag of userTags) {
+      const pill = document.createElement('span');
+      pill.className = 'user-tag';
+      pill.textContent = tag.name;
+      if (tag.bgColor != null) {
+        pill.style.background = tag.bgColor;
+      }
+      tagsContainer.append(pill);
+    }
+    userWrapper.append(tagsContainer);
   }
 
   const rightTopCell = row1.insertCell();
@@ -535,7 +550,6 @@ function transformEntryTable(
 function buildUserStatus(
   userStatus: HTMLElement,
   userNameElement: HTMLElement | null,
-  userGroup: UserGroupEntry | undefined,
   settings: ExtensionSettings,
   getMessage: MessageGetter
 ): string[] {
@@ -566,10 +580,6 @@ function buildUserStatus(
   if (messagesMatch != null) {
     const digits = messagesMatch[0].match(/\d+/g);
     lines.push(`${digits?.join('') ?? 0} ${getMessage('user_status_posts_short')}`);
-  }
-
-  if (userGroup?.group != null) {
-    lines.push(`${getMessage('user_status_group')}: ${userGroup.group}`);
   }
 
   return lines;

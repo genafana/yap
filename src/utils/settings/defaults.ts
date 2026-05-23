@@ -44,7 +44,6 @@ export const SETTINGS_VERSION = 1;
 export const SETTINGS_STORAGE_KEY = 'yap-lamp-settings';
 export const LEGACY_PAGE_STORAGE_KEY = 'yap_plugin_conf_klassika';
 export const BUNDLED_CONFIG_RESOURCE = '/config.json';
-export const OPTIONAL_GROUPS_RESOURCE = '/groups.json';
 
 export const settingDefinitions: {
   readonly [K in keyof ExtensionSettings]: SettingDefinition<ExtensionSettings[K]>;

@@ -74,11 +74,11 @@ scripts\run-ci-checks.bat
 
 The script installs dependencies with `npm ci`, runs the verify suite, and runs commitlint when a commit range is available.
 
-Optional custom groups:
+## Tags & Users
 
-- The distributed extension no longer bundles `groups.json`.
-- If `groups.json` exists next to the unpacked extension's `manifest.json`, runtime will load it.
-- If `groups.json` is absent, the extension continues to work with an empty groups lookup.
+User tags (formerly "groups") are stored in `browser.storage.local` — no external file needed.
+
+Use the **Tags & Users** section on the options page to import (legacy `groups.json` or native format) and export (`tags-users.json`).
 
 ## Build and package
 

@@ -14,7 +14,7 @@ import {
 } from '../../features/content-foundation/page-state';
 import { enhanceLegacyForumPage } from '../../features/forum/legacy-compat';
 import { getBrowser } from '../../utils/browser-api';
-import { loadUserGroupLookup } from '../../utils/groups';
+import { loadUserTagsLookup } from '../../utils/groups';
 import { initializeSettingsDocument } from '../../utils/settings/storage';
 
 const supportedMatches = ['*://*.yaplakal.com/*', '*://*.yap.ru/*'];
@@ -27,7 +27,7 @@ export default defineContentScript({
       legacyStorage: window.localStorage
     });
     const filteredUserName = getFilteredUserName(window.localStorage);
-    const [browser, userGroups] = await Promise.all([getBrowser(), loadUserGroupLookup()]);
+    const [browser, userTagsLookup] = await Promise.all([getBrowser(), loadUserTagsLookup()]);
 
     document.documentElement.dataset.yapLampExtension = 'active';
     replaceAuthorSearchLinks(document);
@@ -55,7 +55,7 @@ export default defineContentScript({
 
     await enhanceLegacyForumPage({
       settings: settingsDocument.settings,
-      userGroups,
+      userTagsLookup,
       filteredUserName,
       getMessage: browser.i18n.getMessage.bind(browser.i18n),
       runtime: {

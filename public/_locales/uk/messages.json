@@ -358,5 +358,39 @@
   },
   "tags_export_success": {
     "message": "Файл tags-users.json експортовано"
+  },
+  "context_tags": {
+    "message": "Теги…"
+  },
+  "tags_dialog_title": {
+    "message": "Теги для $USER$",
+    "placeholders": { "user": { "content": "$1" } }
+  },
+  "tags_dialog_no_tags": {
+    "message": "Теги ще не визначені."
+  },
+  "tags_dialog_save": {
+    "message": "Зберегти"
+  },
+  "tags_dialog_cancel": {
+    "message": "Скасувати"
+  },
+  "tags_new_tag_heading": {
+    "message": "Новий тег"
+  },
+  "tags_new_tag_name": {
+    "message": "Назва"
+  },
+  "tags_new_tag_color": {
+    "message": "Колір фону"
+  },
+  "tags_new_tag_add": {
+    "message": "Додати тег"
+  },
+  "tags_new_tag_name_empty": {
+    "message": "Назва тегу не може бути порожньою."
+  },
+  "tags_dialog_saved": {
+    "message": "Збережено."
   }
 }

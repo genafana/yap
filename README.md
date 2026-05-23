@@ -76,9 +76,9 @@ The script installs dependencies with `npm ci`, runs the verify suite, and runs 
 
 ## Tags & Users
 
-User tags (formerly "groups") are stored in `browser.storage.local` — no external file needed.
+User tags are stored in `browser.storage.local` — no external file needed.
 
-Use the **Tags & Users** section on the options page to import (legacy `groups.json` or native format) and export (`tags-users.json`).
+Use the **Tags & Users** section on the options page to import (native format or legacy format) and export (`tags-users.json`).
 
 ## Build and package
 

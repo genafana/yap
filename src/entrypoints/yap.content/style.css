@@ -342,6 +342,178 @@ td > a:has(span.msg-date) {
   line-height: 1.5;
   white-space: nowrap;
   background: #e0e0e0;
+  /* color is set via JS (getContrastColor) when bgColor is defined */
   color: #333;
   font-weight: normal;
+}
+
+/* ── Tags dialog ──────────────────────────────────────────────────────────── */
+
+dialog.yap-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  padding: 1.2em 1.4em 1em;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  min-width: 260px;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 2147483647;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+}
+
+dialog.yap-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.yap-dialog__title {
+  margin: 0 0 .8em;
+  font-size: 1em;
+  font-weight: 600;
+  color: #111;
+}
+
+.yap-dialog__checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: .8em;
+}
+
+.yap-dialog__tag-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.yap-dialog__tag-row:hover {
+  background: #f0f0f0;
+}
+
+.yap-dialog__tag-cb {
+  margin: 0;
+  cursor: pointer;
+}
+
+.yap-dialog__swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  background: #e0e0e0;
+  flex-shrink: 0;
+}
+
+.yap-dialog__empty {
+  margin: 0;
+  color: #666;
+  font-style: italic;
+}
+
+.yap-dialog__new-tag {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: .5em .7em;
+  margin-bottom: .8em;
+}
+
+.yap-dialog__new-tag > summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: #333;
+  user-select: none;
+}
+
+.yap-dialog__field {
+  display: flex;
+  align-items: center;
+  gap: .5em;
+  margin-top: .5em;
+  font-size: .9em;
+  color: #333;
+}
+
+.yap-dialog__field > span {
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.yap-dialog__input {
+  flex: 1;
+  padding: 2px 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: .9em;
+  font-family: inherit;
+}
+
+.yap-dialog__color {
+  width: 40px;
+  height: 24px;
+  padding: 1px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.yap-dialog__error {
+  margin: .3em 0 0;
+  color: #c00;
+  font-size: .85em;
+}
+
+.yap-dialog__footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: .6em;
+  padding-top: .5em;
+  border-top: 1px solid #eee;
+}
+
+.yap-dialog__status {
+  flex: 1;
+  font-size: .85em;
+  color: #060;
+}
+
+.yap-dialog__btn {
+  padding: 4px 14px;
+  border-radius: 5px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  font-size: .9em;
+  font-family: inherit;
+}
+
+.yap-dialog__btn--primary {
+  background: #1a73e8;
+  color: #fff;
+  border-color: #1a73e8;
+}
+
+.yap-dialog__btn--primary:hover {
+  background: #1558b0;
+}
+
+.yap-dialog__btn--secondary {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.yap-dialog__btn--secondary:hover {
+  background: #e0e0e0;
 }

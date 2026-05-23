@@ -29,7 +29,7 @@ import {
   type UsersMap,
   TAGS_STORAGE_KEY,
   USERS_STORAGE_KEY
-} from '../../src/utils/groups';
+} from '../../src/utils/tags';
 
 describe('normalizeLegacyUsers', () => {
   it('splits whitespace-delimited strings', () => {

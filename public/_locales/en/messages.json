@@ -358,5 +358,39 @@
   },
   "tags_export_success": {
     "message": "tags-users.json exported"
+  },
+  "context_tags": {
+    "message": "Tags…"
+  },
+  "tags_dialog_title": {
+    "message": "Tags for $USER$",
+    "placeholders": { "user": { "content": "$1" } }
+  },
+  "tags_dialog_no_tags": {
+    "message": "No tags defined yet."
+  },
+  "tags_dialog_save": {
+    "message": "Save"
+  },
+  "tags_dialog_cancel": {
+    "message": "Cancel"
+  },
+  "tags_new_tag_heading": {
+    "message": "New tag"
+  },
+  "tags_new_tag_name": {
+    "message": "Name"
+  },
+  "tags_new_tag_color": {
+    "message": "Background color"
+  },
+  "tags_new_tag_add": {
+    "message": "Add tag"
+  },
+  "tags_new_tag_name_empty": {
+    "message": "Tag name cannot be empty."
+  },
+  "tags_dialog_saved": {
+    "message": "Saved."
   }
 }

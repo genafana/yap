@@ -5,7 +5,7 @@ import {
   exportTagsJson,
   importTagsData,
   parseImport
-} from '../../utils/groups';
+} from '../../utils/tags';
 import { localizeDocument, type MessageGetter } from '../../utils/i18n';
 import { resolveSelectOptionLabel } from './select-labels';
 import {

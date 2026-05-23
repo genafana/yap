@@ -14,7 +14,7 @@ import {
 } from '../../features/content-foundation/page-state';
 import { enhanceLegacyForumPage } from '../../features/forum/legacy-compat';
 import { getBrowser } from '../../utils/browser-api';
-import { loadUserTagsLookup } from '../../utils/groups';
+import { loadUserTagsLookup } from '../../utils/tags';
 import { initializeSettingsDocument } from '../../utils/settings/storage';
 
 const supportedMatches = ['*://*.yaplakal.com/*', '*://*.yap.ru/*'];

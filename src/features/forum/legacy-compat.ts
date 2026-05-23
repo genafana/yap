@@ -1,12 +1,14 @@
 import type Browser from 'webextension-polyfill';
 
-import type { UserTagsLookup } from '../../utils/groups';
+import type { UserTagsLookup } from '../../utils/tags';
 import type { MessageGetter } from '../../utils/i18n';
 import type { ExtensionSettings } from '../../utils/settings/defaults';
+import { getContrastColor } from '../../utils/color';
 import { reduceRightColumn } from '../content-foundation/dom';
 import { getPostArea, getRow } from '../content-foundation/page';
 import { SMILIES } from './smilies';
 import { attachContextMenus } from './context-menu';
+import { openTagsDialog } from './tags-dialog';
 
 declare global {
   interface Window {
@@ -141,6 +143,16 @@ function initContextMenu(
           window.localStorage.setItem('filtered_nik_name', userName);
           window.scrollTo(0, 0);
           window.location.reload();
+        }
+      }
+    },
+    {
+      label: getMessage('context_tags'),
+      action: function (this: HTMLElement) {
+        const table = this.closest('table.entry-table,[data-nik-name]') as HTMLElement | null;
+        const userName = table?.dataset.nikName;
+        if (userName != null) {
+          openTagsDialog(userName, getMessage);
         }
       }
     }
@@ -449,6 +461,7 @@ function transformEntryTable(
       pill.textContent = tag.name;
       if (tag.bgColor != null) {
         pill.style.background = tag.bgColor;
+        pill.style.color = getContrastColor(tag.bgColor);
       }
       tagsContainer.append(pill);
     }

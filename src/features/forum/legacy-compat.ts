@@ -746,6 +746,11 @@ function setupResponseFormToggle(
     return;
   }
 
+  // Only apply on the thread/comments page — not on reply or report pages
+  if (document.querySelector('table[id^="entry"]') == null) {
+    return;
+  }
+
   const replier = document.getElementById('REPLIER') as HTMLElement | null;
   if (replier == null || document.getElementById('toggleFBO') != null) {
     return;

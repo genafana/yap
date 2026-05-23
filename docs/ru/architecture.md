@@ -49,7 +49,7 @@
 
 ### Теги пользователей
 
-Теги (бывшие «группы») хранятся в `browser.storage.local` под ключами `yap-lamp-tags` и `yap-lamp-users`.
+Теги хранятся в `browser.storage.local` под ключами `yap-lamp-tags` и `yap-lamp-users`.
 
 - `TagsMap` — `Record<string, { bgColor?, ignore? }>` — определения тегов.
 - `UsersMap` — `Record<string, { tags: string[] }>` — привязка пользователей к тегам.

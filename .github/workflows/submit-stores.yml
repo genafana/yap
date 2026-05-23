@@ -65,6 +65,7 @@ jobs:
         with:
           name: store-submit-packages
           if-no-files-found: error
+          include-hidden-files: true
           path: .output/*.zip
 
   submit-chrome:

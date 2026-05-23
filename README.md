@@ -99,13 +99,13 @@ npm run package:safari
 ## GitHub Actions release flow
 
 - `ci.yml` — run `npm ci`, lint, typecheck, unit tests, and full build on pushes and pull requests
-- `release-artifacts.yml` — run semantic-release on pushes to `main`, create the release commit/tag/GitHub Release, build ZIP artifacts from the new release tag, attach them to the GitHub Release, and submit Chrome / Firefox / Edge packages through store APIs
+- `release-artifacts.yml` — run semantic-release on pushes to `main`, create the release commit/tag/GitHub Release, build ZIP artifacts from the new release tag, attach them to the GitHub Release, and submit configured store packages
 - `submit-stores.yml` — manual rebuild/resubmit workflow for a chosen git ref and chosen target stores
 
 Release behavior:
 
 - merge or push commits to `main` → semantic-release analyzes all commits in `main` since the last release tag and computes the next semantic version
-- if a release is needed, the workflow creates a `vX.Y.Z` tag and GitHub Release automatically, then builds and submits the new store packages
+- if a release is needed, the workflow creates a `vX.Y.Z` tag and GitHub Release automatically, then builds the new store packages
 - run `submit-stores.yml` manually → choose `ref`, `target` (`all`, `chrome`, `firefox`, `edge`) and `dry_run`
 
 Important release facts:
@@ -119,6 +119,13 @@ Store submission requires GitHub **Environments** and secrets configured in repo
 - `chrome-store`
 - `firefox-store`
 - `edge-store`
+
+Automatic store submit toggles:
+
+- Firefox submit runs automatically when release packaging succeeds.
+- Chrome auto-submit runs only when repository variable `AUTO_SUBMIT_CHROME=true` is set.
+- Edge auto-submit runs only when repository variable `AUTO_SUBMIT_EDGE=true` is set.
+- `submit-stores.yml` remains available for manual dry-runs and re-submits for every supported store target.
 
 Safari remains a separate manual/TODO release lane.
 

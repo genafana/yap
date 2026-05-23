@@ -24,7 +24,7 @@
 Сейчас release automation в репозитории устроена так:
 
 - `ci.yml` — `lint`, `typecheck`, `test:unit` и `build` на каждом push / pull request;
-- `release-artifacts.yml` — semantic-release на каждом push в `main`, автоматический расчёт новой версии по commit history, создание release commit/tag/GitHub Release, сборка ZIP-артефактов и submit в Chrome / Firefox / Edge;
+- `release-artifacts.yml` — semantic-release на каждом push в `main`, автоматический расчёт новой версии по commit history, создание release commit/tag/GitHub Release, сборка ZIP-артефактов и submit в настроенные store-цели;
 - `submit-stores.yml` — ручной rebuild/resubmit для выбранного `ref`.
 
 ### Как запускается release
@@ -36,7 +36,7 @@
   - вычисляет semver bump;
   - создаёт release commit, тег вида `v1.2.3` и GitHub Release;
   - собирает артефакты;
-  - запускает submit в Chrome / Firefox / Edge.
+  - запускает автоматический submit для включённых store-целей.
 
 #### Вручную
 
@@ -52,6 +52,13 @@
 - ручной переотправки;
 - первого тестирования automation без публикации;
 - повторной отправки уже выпущенного тега или конкретного commit/tag.
+
+### Какие store submit запускаются автоматически
+
+- Firefox submit включён по умолчанию.
+- Chrome submit включается только если repository variable `AUTO_SUBMIT_CHROME=true`.
+- Edge submit включается только если repository variable `AUTO_SUBMIT_EDGE=true`.
+- Даже при отключённых автосабмитах ручной `submit-stores.yml` остаётся доступен для `chrome`, `firefox` и `edge`.
 
 ## Commit messages и merge policy
 

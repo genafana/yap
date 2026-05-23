@@ -47,6 +47,7 @@ For Firefox packaging and release work, remember that the generated `sources.zip
 - Create one browser archive: `npm run zip:chrome|firefox|edge|opera`
 - Safari handoff packaging on macOS: `npm run build:safari` then `npm run package:safari`
 - Release/store automation runs on pushes to `main` via semantic-release, not from manually pushed release tags
+- Firefox submit runs automatically from the release workflow; Chrome and Edge auto-submit are opt-in via repository variables `AUTO_SUBMIT_CHROME=true` and `AUTO_SUBMIT_EDGE=true`
 - `package.json` is the single source of truth for the extension version; do not hardcode `manifest.version` in `wxt.config.ts`
 - Semantic versioning depends on Conventional Commits in `main` history; if release type must reflect all merged commits, avoid squash merges
 

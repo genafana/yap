@@ -91,7 +91,7 @@ jobs:
   submit-chrome:
     name: Submit Chrome
     needs: [release, package]
-    if: needs.release.outputs.released == 'true'
+    if: needs.release.outputs.released == 'true' && vars.AUTO_SUBMIT_CHROME == 'true'
     runs-on: ubuntu-latest
     environment: chrome-store
     permissions:
@@ -173,7 +173,7 @@ jobs:
   submit-edge:
     name: Submit Edge
     needs: [release, package]
-    if: needs.release.outputs.released == 'true'
+    if: needs.release.outputs.released == 'true' && vars.AUTO_SUBMIT_EDGE == 'true'
     runs-on: ubuntu-latest
     environment: edge-store
     permissions:

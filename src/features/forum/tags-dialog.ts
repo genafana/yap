@@ -105,7 +105,11 @@ function deleteTagFromDOM(tagName: string): void {
  * Shows a small confirmation dialog before deleting a tag.
  * On confirm: removes the tag from storage and updates the page DOM.
  */
-export function openDeleteTagConfirm(tagName: string, getMessage: MessageGetter): void {
+export function openDeleteTagConfirm(
+  tagName: string,
+  getMessage: MessageGetter,
+  onDeleted?: () => void
+): void {
   // Remove any stale confirm dialog first
   document.getElementById(CONFIRM_DIALOG_ID)?.remove();
 
@@ -138,6 +142,7 @@ export function openDeleteTagConfirm(tagName: string, getMessage: MessageGetter)
     dialog.remove();
     void deleteTag(tagName).then(() => {
       deleteTagFromDOM(tagName);
+      onDeleted?.();
     });
   });
 
@@ -161,6 +166,64 @@ export function openDeleteTagConfirm(tagName: string, getMessage: MessageGetter)
 }
 
 // ── Tags edit dialog ──────────────────────────────────────────────────────────
+
+const MINI_MENU_ID = 'yap-tag-row-ctxm';
+
+/** Dismisses any open tag-row mini context menu. */
+function dismissMiniMenu(): void {
+  const existing = document.getElementById(MINI_MENU_ID) as HTMLDialogElement | null;
+  if (existing != null) {
+    if (existing.open) existing.close();
+    existing.remove();
+  }
+}
+
+/**
+ * Shows a small context-menu dialog at (x, y) for a tag row inside the
+ * tags dialog. Uses showModal() so it sits in the top layer above the
+ * first dialog. Transparent backdrop preserves the first dialog visually.
+ */
+function showTagRowContextMenu(
+  x: number,
+  y: number,
+  tagName: string,
+  _tagsDialog: HTMLDialogElement,
+  getMessage: MessageGetter,
+  onDeleted?: () => void
+): void {
+  dismissMiniMenu();
+
+  const menu = document.createElement('dialog');
+  menu.id = MINI_MENU_ID;
+  menu.className = 'yap-tag-row-ctxm';
+  // Position at cursor; override browser default dialog centering
+  menu.style.left = `${x}px`;
+  menu.style.top = `${y}px`;
+
+  const item = document.createElement('button');
+  item.type = 'button';
+  item.className = 'yap-tag-row-ctxm__item';
+  item.textContent = getMessage('context_tag_delete');
+  item.addEventListener('click', () => {
+    dismissMiniMenu();
+    openDeleteTagConfirm(tagName, getMessage, onDeleted);
+  });
+
+  menu.append(item);
+  document.body.append(menu);
+  (menu as HTMLDialogElement).showModal();
+
+  // Backdrop click (outside the menu box) closes it
+  menu.addEventListener('click', (e) => {
+    const rect = menu.getBoundingClientRect();
+    const outside =
+      e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom;
+    if (outside) dismissMiniMenu();
+  });
+}
 
 /**
  * Opens (or focuses already-open) the tags dialog for a given username.
@@ -230,6 +293,21 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
         nameSpan.textContent = tagName;
 
         row.append(cb, swatch, nameSpan);
+        row.dataset.tagName = tagName;
+        row.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          showTagRowContextMenu(
+            e.clientX, e.clientY, tagName,
+            dialog as HTMLDialogElement, getMessage,
+            () => {
+              void Promise.all([loadTags(), loadUsers()]).then(([t, u]) => {
+                tagsMap = t;
+                usersMap = u;
+                render();
+              });
+            }
+          );
+        });
         checkboxSection.append(row);
       }
     }

@@ -535,3 +535,38 @@ dialog.yap-dialog::backdrop {
   font-size: 0.95em;
   line-height: 1.4;
 }
+
+/* Mini context menu for tag rows inside the tags dialog */
+dialog.yap-tag-row-ctxm {
+  position: fixed;
+  margin: 0;
+  padding: 4px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  min-width: 120px;
+  font-size: 0.9em;
+  background: #fff;
+}
+
+dialog.yap-tag-row-ctxm::backdrop {
+  background: transparent;
+}
+
+.yap-tag-row-ctxm__item {
+  display: block;
+  width: 100%;
+  padding: 6px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #c62828;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 0.9em;
+  text-align: left;
+}
+
+.yap-tag-row-ctxm__item:hover {
+  background: #fce8e8;
+}

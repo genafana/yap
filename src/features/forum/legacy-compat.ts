@@ -1138,9 +1138,7 @@ function setBetterCopyMessageLink(getMessage: MessageGetter): void {
           anchor;
         event.preventDefault();
         event.stopImmediatePropagation();
-        const table = currentTarget.closest<HTMLTableElement>('table.entry-table');
-        const nick = table?.dataset.nikName ?? '';
-        void navigator.clipboard.writeText(`${currentTarget.href}\n${nick} - `);
+        void navigator.clipboard.writeText(currentTarget.href);
         showToastMessage(getMessage('toast_link_copied'));
       },
       true

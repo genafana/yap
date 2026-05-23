@@ -12,7 +12,7 @@ Cross-browser WebExtension project for YAP UI customization.
 ## Current repository layout
 
 - `src/` — TypeScript/WXT source tree.
-- `public/groups.json` — bundled anonymized placeholder groups; no real user nicknames are stored in the repository.
+- `public/config.json` — bundled default settings.
 - `scripts/` — helper scripts for building, zipping, and Safari packaging.
 - `tests/` — unit and future e2e tests.
 - `tmp/` — local reports and scratch files, ignored by git.
@@ -55,6 +55,12 @@ npm run dev:firefox
 npm run dev:edge
 npm run dev:opera
 ```
+
+Optional custom groups:
+
+- The distributed extension no longer bundles `groups.json`.
+- If `groups.json` exists next to the unpacked extension's `manifest.json`, runtime will load it.
+- If `groups.json` is absent, the extension continues to work with an empty groups lookup.
 
 ## Build and package
 

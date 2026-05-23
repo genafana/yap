@@ -1,6 +1,6 @@
-import { BUNDLED_GROUPS_RESOURCE } from './settings/defaults';
-import { fetchExtensionText } from './extension-resource';
+import { fetchOptionalExtensionText } from './extension-resource';
 import { parseLooseJson } from './loose-json';
+import { OPTIONAL_GROUPS_RESOURCE } from './settings/defaults';
 
 export interface RawUserGroup {
   users?: string | string[];
@@ -47,7 +47,12 @@ export function invertUserGroups(groups: RawUserGroupMap): UserGroupLookup {
 }
 
 export async function loadUserGroupLookup(): Promise<UserGroupLookup> {
-  const rawText = await fetchExtensionText(BUNDLED_GROUPS_RESOURCE);
+  const rawText = await fetchOptionalExtensionText(OPTIONAL_GROUPS_RESOURCE);
+
+  if (rawText === undefined) {
+    return {};
+  }
+
   const groups = parseLooseJson<RawUserGroupMap>(rawText);
   return invertUserGroups(groups);
 }

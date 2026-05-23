@@ -239,3 +239,27 @@ export async function importTagsData(
   await saveTags(mergedTags);
   await saveUsers(mergedUsers);
 }
+
+// ── Delete tag ────────────────────────────────────────────────────────────────
+
+/**
+ * Removes a tag from TagsMap and strips it from every user's tag array.
+ * Users whose tag list becomes empty are removed from UsersMap entirely.
+ */
+export async function deleteTag(tagName: string): Promise<void> {
+  const [tags, users] = await Promise.all([loadTags(), loadUsers()]);
+
+  const newTags = Object.fromEntries(
+    Object.entries(tags).filter(([k]) => k !== tagName)
+  );
+
+  const newUsers: UsersMap = {};
+  for (const [username, userDef] of Object.entries(users)) {
+    const filtered = userDef.tags.filter((t) => t !== tagName);
+    if (filtered.length > 0) {
+      newUsers[username] = { ...userDef, tags: filtered };
+    }
+  }
+
+  await Promise.all([saveTags(newTags), saveUsers(newUsers)]);
+}

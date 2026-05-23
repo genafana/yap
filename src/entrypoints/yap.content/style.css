@@ -517,3 +517,18 @@ dialog.yap-dialog::backdrop {
 .yap-dialog__btn--secondary:hover {
   background: #e0e0e0;
 }
+
+.yap-dialog__btn--danger {
+  background: #d32f2f;
+  color: #fff;
+}
+
+.yap-dialog__btn--danger:hover {
+  background: #b71c1c;
+}
+
+.yap-dialog--confirm .yap-dialog__confirm-msg {
+  margin: 0 0 1.2em;
+  font-size: 0.95em;
+  line-height: 1.4;
+}

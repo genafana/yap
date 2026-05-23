@@ -392,5 +392,15 @@
   },
   "tags_dialog_saved": {
     "message": "Сохранено."
+  },
+  "context_tag_delete": {
+    "message": "Удалить…"
+  },
+  "tag_delete_confirm": {
+    "message": "Удалить тег '$TAG$' и убрать его у всех пользователей?",
+    "placeholders": { "tag": { "content": "$1" } }
+  },
+  "tag_delete_button": {
+    "message": "Удалить"
   }
 }

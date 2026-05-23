@@ -229,3 +229,56 @@ describe('loadUserTagsLookup', () => {
     expect(lookup['alice']).toEqual([{ name: 'Devs', bgColor: 'Khaki' }]);
   });
 });
+
+import { deleteTag } from '../../src/utils/tags';
+
+describe('deleteTag', () => {
+  beforeEach(() => {
+    for (const k of Object.keys(mockStorage)) {
+      delete mockStorage[k];
+    }
+  });
+
+  it('removes the tag from TagsMap', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Admin: { bgColor: '#f00' }, Dev: { bgColor: '#0f0' } };
+    mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Admin'] }, bob: { tags: ['Dev'] } };
+
+    await deleteTag('Admin');
+
+    const saved = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(saved).not.toHaveProperty('Admin');
+    expect(saved).toHaveProperty('Dev');
+  });
+
+  it('strips the tag from affected users', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Admin: { bgColor: '#f00' }, Dev: { bgColor: '#0f0' } };
+    mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Admin', 'Dev'] } };
+
+    await deleteTag('Admin');
+
+    const saved = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(saved['alice']?.tags).toEqual(['Dev']);
+  });
+
+  it('removes users whose tag list becomes empty after deletion', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Admin: { bgColor: '#f00' } };
+    mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Admin'] } };
+
+    await deleteTag('Admin');
+
+    const saved = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(saved).not.toHaveProperty('alice');
+  });
+
+  it('is a no-op when the tag does not exist', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Dev: { bgColor: '#0f0' } };
+    mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Dev'] } };
+
+    await deleteTag('NonExistent');
+
+    const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(savedTags).toHaveProperty('Dev');
+    expect(savedUsers['alice']?.tags).toEqual(['Dev']);
+  });
+});

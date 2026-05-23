@@ -392,5 +392,15 @@
   },
   "tags_dialog_saved": {
     "message": "Saved."
+  },
+  "context_tag_delete": {
+    "message": "Delete…"
+  },
+  "tag_delete_confirm": {
+    "message": "Delete tag '$TAG$' and remove it from all users?",
+    "placeholders": { "tag": { "content": "$1" } }
+  },
+  "tag_delete_button": {
+    "message": "Delete"
   }
 }

@@ -1,5 +1,6 @@
 import type { MessageGetter } from '../../utils/i18n';
 import {
+  deleteTag,
   loadTags,
   loadUsers,
   saveTags,
@@ -9,6 +10,7 @@ import {
 import { getContrastColor } from '../../utils/color';
 
 const DIALOG_ID = 'yap-tags-dialog';
+const CONFIRM_DIALOG_ID = 'yap-tags-confirm-dialog';
 
 // ── In-place DOM update helpers ───────────────────────────────────────────────
 
@@ -51,10 +53,18 @@ function refreshTagPillsInDOM(
     const container = document.createElement('div');
     container.className = 'user-tags';
 
+    // Mirror ctxm attribute only when context menu infrastructure is present
+    const ctxMenuActive = document.getElementById('ctxm-overlay') != null;
+
     for (const tagName of selectedTagNames) {
       const pill = document.createElement('span');
       pill.className = 'user-tag';
       pill.textContent = tagName;
+      pill.dataset.tagName = tagName;
+      if (ctxMenuActive) {
+        pill.setAttribute('ctxm', 'tag_actions');
+        pill.classList.add('has-context-menu');
+      }
       const tagDef = tagsMap[tagName];
       const bg = tagDef?.bgColor;
       if (bg != null) {
@@ -68,7 +78,89 @@ function refreshTagPillsInDOM(
   }
 }
 
-// ── Dialog builder ────────────────────────────────────────────────────────────
+// ── Delete tag ────────────────────────────────────────────────────────────────
+
+/**
+ * Removes all pill spans for the given tag from the live page DOM.
+ * If a .user-tags container becomes empty after removal, it is removed too.
+ */
+function deleteTagFromDOM(tagName: string): void {
+  const pills = document.querySelectorAll<HTMLElement>(
+    `.user-tag[data-tag-name="${CSS.escape(tagName)}"]`
+  );
+  for (const pill of pills) {
+    const container = pill.parentElement;
+    pill.remove();
+    if (
+      container != null &&
+      container.classList.contains('user-tags') &&
+      container.childElementCount === 0
+    ) {
+      container.remove();
+    }
+  }
+}
+
+/**
+ * Shows a small confirmation dialog before deleting a tag.
+ * On confirm: removes the tag from storage and updates the page DOM.
+ */
+export function openDeleteTagConfirm(tagName: string, getMessage: MessageGetter): void {
+  // Remove any stale confirm dialog first
+  document.getElementById(CONFIRM_DIALOG_ID)?.remove();
+
+  const dialog = document.createElement('dialog');
+  dialog.id = CONFIRM_DIALOG_ID;
+  dialog.className = 'yap-dialog yap-dialog--confirm';
+
+  const msg = document.createElement('p');
+  msg.className = 'yap-dialog__confirm-msg';
+  msg.textContent = getMessage('tag_delete_confirm', tagName);
+
+  const footer = document.createElement('div');
+  footer.className = 'yap-dialog__footer';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.className = 'yap-dialog__btn yap-dialog__btn--secondary';
+  cancelBtn.textContent = getMessage('tags_dialog_cancel');
+  cancelBtn.addEventListener('click', () => {
+    dialog.close();
+    dialog.remove();
+  });
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'yap-dialog__btn yap-dialog__btn--danger';
+  deleteBtn.textContent = getMessage('tag_delete_button');
+  deleteBtn.addEventListener('click', () => {
+    dialog.close();
+    dialog.remove();
+    void deleteTag(tagName).then(() => {
+      deleteTagFromDOM(tagName);
+    });
+  });
+
+  footer.append(cancelBtn, deleteBtn);
+  dialog.append(msg, footer);
+  document.body.append(dialog);
+  (dialog as HTMLDialogElement).showModal();
+
+  dialog.addEventListener('click', (event) => {
+    const rect = dialog.getBoundingClientRect();
+    const isOutside =
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom;
+    if (isOutside) {
+      dialog.close();
+      dialog.remove();
+    }
+  });
+}
+
+// ── Tags edit dialog ──────────────────────────────────────────────────────────
 
 /**
  * Opens (or focuses already-open) the tags dialog for a given username.

@@ -8,7 +8,7 @@ import { reduceRightColumn } from '../content-foundation/dom';
 import { getPostArea, getRow } from '../content-foundation/page';
 import { SMILIES } from './smilies';
 import { attachContextMenus } from './context-menu';
-import { openTagsDialog } from './tags-dialog';
+import { openTagsDialog, openDeleteTagConfirm } from './tags-dialog';
 
 declare global {
   interface Window {
@@ -192,6 +192,17 @@ function initContextMenu(
             const homepageUrl = runtime.manifest.homepage_url;
             if (homepageUrl != null) {
               window.open(homepageUrl, '_blank', 'noopener');
+            }
+          }
+        }
+      ],
+      tag_actions: [
+        {
+          label: getMessage('context_tag_delete'),
+          action: function (this: HTMLElement) {
+            const tagName = this.dataset.tagName;
+            if (tagName != null) {
+              openDeleteTagConfirm(tagName, getMessage);
             }
           }
         }
@@ -459,6 +470,8 @@ function transformEntryTable(
       const pill = document.createElement('span');
       pill.className = 'user-tag';
       pill.textContent = tag.name;
+      pill.dataset.tagName = tag.name;
+      prepareForContextMenu(pill, settings, 'tag_actions');
       if (tag.bgColor != null) {
         pill.style.background = tag.bgColor;
         pill.style.color = getContrastColor(tag.bgColor);

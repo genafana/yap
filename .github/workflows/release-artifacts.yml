@@ -80,9 +80,7 @@ jobs:
         with:
           name: webextension-artifacts
           if-no-files-found: error
-          path: |
-            .output/*.zip
-            .output/**/manifest.json
+          path: .output/*.zip
 
       - name: Upload release assets
         env:

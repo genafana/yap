@@ -12,6 +12,7 @@ Cross-browser WebExtension project for YAP UI customization.
 ## Current repository layout
 
 - `src/` — TypeScript/WXT source tree.
+- `public/groups.json` — bundled anonymized placeholder groups; no real user nicknames are stored in the repository.
 - `scripts/` — helper scripts for building, zipping, and Safari packaging.
 - `tests/` — unit and future e2e tests.
 - `tmp/` — local reports and scratch files, ignored by git.

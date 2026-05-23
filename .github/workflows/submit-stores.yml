@@ -47,18 +47,11 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Run CI verify checks
+        run: bash ./scripts/run-ci-checks.sh --verify-only
 
-      - name: Verify project
-        run: |
-          npm run typecheck
-          npm run test:unit
-
-      - name: Build and zip
-        run: |
-          npm run build
-          npm run zip
+      - name: Zip store packages
+        run: npm run zip
 
       - name: Upload store packages
         uses: actions/upload-artifact@v4

@@ -386,6 +386,9 @@ dialog.yap-dialog::backdrop {
   flex-direction: column;
   gap: 4px;
   margin-bottom: .8em;
+  /* Show ~8 rows, scroll beyond. 8 × 24px rows + 7 × 4px gaps */
+  max-height: 220px;
+  overflow-y: auto;
 }
 
 .yap-dialog__tag-row {

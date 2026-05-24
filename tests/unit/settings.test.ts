@@ -25,12 +25,14 @@ describe('settings schema', () => {
     expect(
       normalizeSettings({
         user_pic_size: '80',
+        primary_tag_full_user_bg: true,
         apply_context_menu: false,
         privat_mail_type: 'avatar_rkm'
       })
     ).toMatchObject({
       ...defaultSettings,
       user_pic_size: 80,
+      primary_tag_full_user_bg: true,
       apply_context_menu: false,
       privat_mail_type: 'msg_menu'
     });

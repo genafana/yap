@@ -7,6 +7,7 @@
     "show_date_or_age": "age",
     "self_highlight_bg": "Gainsboro",
     "self_highlight_border": "1px solid silver",
+    "primary_tag_full_user_bg": false,
     "title_bg_color": "WhiteSmoke",
     "message_bg_color": "white",
     "citate_bg_color": "white",

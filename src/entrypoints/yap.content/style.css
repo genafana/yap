@@ -443,6 +443,15 @@ dialog.yap-dialog::backdrop {
   flex-shrink: 0;
 }
 
+.yap-dialog__field--checkbox {
+  cursor: pointer;
+}
+
+.yap-dialog__field--checkbox > span {
+  min-width: unset;
+}
+
+
 .yap-dialog__input {
   flex: 1;
   padding: 2px 5px;

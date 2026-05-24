@@ -221,6 +221,12 @@
   "setting_self_highlight_border_description": {
     "message": "Залиште порожнім, щоб вимкнути межу. Формат: товщина стиль колір. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/border-style\">Стилі меж</a>"
   },
+  "setting_primary_tag_full_user_bg_label": {
+    "message": "Загальне підсвічування користувача"
+  },
+  "setting_primary_tag_full_user_bg_description": {
+    "message": "Якщо увімкнено, основний тег фарбує весь лівий стовпець коментаря. Якщо вимкнено — підсвічується лише блок користувача."
+  },
   "setting_title_bg_color_label": {
     "message": "Колір тла рядка заголовка та лівого стовпця"
   },
@@ -436,6 +442,9 @@
   },
   "tag_edit_new_title": {
     "message": "Новий тег"
+  },
+  "tag_edit_primary": {
+    "message": "Основний (підсвічувати користувача)"
   },
   "tags_dialog_new_tag_btn": {
     "message": "Новий тег"

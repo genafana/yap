@@ -60,8 +60,8 @@ describe('convertLegacyFormat', () => {
 
     const { tags, users } = convertLegacyFormat(raw);
 
-    expect(tags['Developers']).toEqual({ bgColor: 'Khaki' });
-    expect(tags['Muted']).toEqual({ ignore: true });
+    expect(tags['Developers']).toEqual({ bgColor: 'Khaki', primary: true });
+    expect(tags['Muted']).toEqual({ ignore: true, primary: true });
     expect(users['alice']).toEqual({ tags: ['Developers'] });
     expect(users['bob']).toEqual({ tags: ['Developers'] });
     expect(users['spam-user']).toEqual({ tags: ['Muted'] });
@@ -84,13 +84,13 @@ describe('convertLegacyFormat', () => {
   it('omits bgColor when color is absent', () => {
     const raw: LegacyTagsJson = { Silent: { users: ['user1'] } };
     const { tags } = convertLegacyFormat(raw);
-    expect(tags['Silent']).toEqual({});
+    expect(tags['Silent']).toEqual({ primary: true });
   });
 
   it('splits space-separated string users', () => {
     const raw: LegacyTagsJson = { Разрабы: { color: 'Khaki', users: 'Dmitry1971 DimiDron' } };
     const { tags, users } = convertLegacyFormat(raw);
-    expect(tags['Разрабы']).toEqual({ bgColor: 'Khaki' });
+    expect(tags['Разрабы']).toEqual({ bgColor: 'Khaki', primary: true });
     expect(users['Dmitry1971']).toEqual({ tags: ['Разрабы'] });
     expect(users['DimiDron']).toEqual({ tags: ['Разрабы'] });
   });
@@ -98,7 +98,7 @@ describe('convertLegacyFormat', () => {
   it('sets ignore flag and no bgColor for ignore-only groups', () => {
     const raw: LegacyTagsJson = { Игнор: { ignore: true, users: 'Ник1 Ник2 Ник3' } };
     const { tags, users } = convertLegacyFormat(raw);
-    expect(tags['Игнор']).toEqual({ ignore: true });
+    expect(tags['Игнор']).toEqual({ ignore: true, primary: true });
     expect(Object.keys(users)).toHaveLength(3);
     expect(users['Ник1']).toEqual({ tags: ['Игнор'] });
   });
@@ -111,7 +111,7 @@ describe('convertLegacyFormat', () => {
     }`;
     const parsed = parseLooseJson<LegacyTagsJson>(looseText);
     const { tags, users } = convertLegacyFormat(parsed);
-    expect(tags['Наши']).toEqual({ bgColor: 'Lime' });
+    expect(tags['Наши']).toEqual({ bgColor: 'Lime', primary: true });
     expect(users['alice']).toEqual({ tags: ['Наши'] });
     expect(users['charlie']).toEqual({ tags: ['Наши'] });
     expect(users['dave']).toEqual({ tags: ['Наши'] });
@@ -132,20 +132,29 @@ describe('buildUserTagsLookup', () => {
 
     const lookup = buildUserTagsLookup(tags, users);
 
-    expect(lookup['alice']).toEqual([{ name: 'Team', bgColor: 'Khaki' }]);
+    // primary defaults to true when absent from TagDefinition
+    expect(lookup['alice']).toEqual([{ name: 'Team', bgColor: 'Khaki', primary: true }]);
     expect(lookup['bob']).toEqual([
-      { name: 'Team', bgColor: 'Khaki' },
-      { name: 'Ignore', ignore: true }
+      { name: 'Team', bgColor: 'Khaki', primary: true },
+      { name: 'Ignore', ignore: true, primary: true }
     ]);
-    expect(lookup['spam-user']).toEqual([{ name: 'Ignore', ignore: true }]);
+    expect(lookup['spam-user']).toEqual([{ name: 'Ignore', ignore: true, primary: true }]);
   });
 
-  it('handles tags not found in TagsMap gracefully', () => {
+  it('handles tags not found in TagsMap gracefully (treated as primary)', () => {
     const tags: TagsMap = {};
     const users: UsersMap = { alice: { tags: ['UnknownTag'] } };
 
     const lookup = buildUserTagsLookup(tags, users);
-    expect(lookup['alice']).toEqual([{ name: 'UnknownTag' }]);
+    expect(lookup['alice']).toEqual([{ name: 'UnknownTag', primary: true }]);
+  });
+
+  it('omits primary flag when tag has primary: false', () => {
+    const tags: TagsMap = { SecondaryTag: { bgColor: '#abc', primary: false } };
+    const users: UsersMap = { alice: { tags: ['SecondaryTag'] } };
+
+    const lookup = buildUserTagsLookup(tags, users);
+    expect(lookup['alice']).toEqual([{ name: 'SecondaryTag', bgColor: '#abc' }]);
   });
 
   it('omits users with no tags', () => {
@@ -189,14 +198,14 @@ describe('parseImport', () => {
   it('converts legacy format during parse', () => {
     const legacy = { Devs: { color: 'Khaki', users: ['alice'] } };
     const result = parseImport(legacy);
-    expect(result?.tags['Devs']).toEqual({ bgColor: 'Khaki' });
+    expect(result?.tags['Devs']).toEqual({ bgColor: 'Khaki', primary: true });
     expect(result?.users['alice']).toEqual({ tags: ['Devs'] });
   });
 
   it('converts legacy format with space-separated string users', () => {
     const legacy = { Разрабы: { color: 'Khaki', users: 'Dmitry1971 DimiDron' } };
     const result = parseImport(legacy);
-    expect(result?.tags['Разрабы']).toEqual({ bgColor: 'Khaki' });
+    expect(result?.tags['Разрабы']).toEqual({ bgColor: 'Khaki', primary: true });
     expect(result?.users['Dmitry1971']).toEqual({ tags: ['Разрабы'] });
     expect(result?.users['DimiDron']).toEqual({ tags: ['Разрабы'] });
   });
@@ -204,7 +213,7 @@ describe('parseImport', () => {
   it('converts legacy format with ignore group', () => {
     const legacy = { Игнор: { ignore: true, users: 'Ник1 Ник2 Ник3' } };
     const result = parseImport(legacy);
-    expect(result?.tags['Игнор']).toEqual({ ignore: true });
+    expect(result?.tags['Игнор']).toEqual({ ignore: true, primary: true });
     expect(result?.users['Ник1']).toEqual({ tags: ['Игнор'] });
   });
 
@@ -239,7 +248,7 @@ describe('importTagsData', () => {
 
     const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
     expect(savedTags['NewTag']).toEqual({ bgColor: 'Blue' });
-    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true, primary: true });
     expect(savedTags).not.toHaveProperty('OldTag');
 
     const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
@@ -259,7 +268,7 @@ describe('importTagsData', () => {
     const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
     expect(savedTags['TagA']).toEqual({ bgColor: 'Red' });
     expect(savedTags['TagB']).toEqual({ bgColor: 'Blue' });
-    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true, primary: true });
 
     const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
     expect(savedUsers['alice'].tags).toContain('TagA');
@@ -306,29 +315,36 @@ describe('ensureIgnoreTag', () => {
   it('creates the ignore tag when storage is empty', async () => {
     await ensureIgnoreTag();
     const tags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
-    expect(tags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+    expect(tags[IGNORE_TAG_NAME]).toEqual({ ignore: true, primary: true });
   });
 
   it('creates the ignore tag when it does not exist yet', async () => {
     mockStorage[TAGS_STORAGE_KEY] = { Other: {} };
     await ensureIgnoreTag();
     const tags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
-    expect(tags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+    expect(tags[IGNORE_TAG_NAME]).toEqual({ ignore: true, primary: true });
     expect(tags['Other']).toEqual({});
   });
 
-  it('does not write when ignore tag already exists with ignore:true', async () => {
-    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true } };
+  it('does not write when ignore tag already exists with ignore:true and primary:true', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true, primary: true } };
     const setBefore = JSON.stringify(mockStorage);
     await ensureIgnoreTag();
     expect(JSON.stringify(mockStorage)).toEqual(setBefore);
+  });
+
+  it('fixes ignore tag when primary:true flag is missing', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true } };
+    await ensureIgnoreTag();
+    const tags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(tags[IGNORE_TAG_NAME]).toEqual({ ignore: true, primary: true });
   });
 
   it('fixes ignore tag when ignore:true flag is missing', async () => {
     mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { bgColor: '#ff0000' } };
     await ensureIgnoreTag();
     const tags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
-    expect(tags[IGNORE_TAG_NAME]).toEqual({ bgColor: '#ff0000', ignore: true });
+    expect(tags[IGNORE_TAG_NAME]).toEqual({ bgColor: '#ff0000', ignore: true, primary: true });
   });
 });
 
@@ -348,7 +364,7 @@ describe('loadUserTagsLookup', () => {
     mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Devs'] } };
 
     const lookup = await loadUserTagsLookup();
-    expect(lookup['alice']).toEqual([{ name: 'Devs', bgColor: 'Khaki' }]);
+    expect(lookup['alice']).toEqual([{ name: 'Devs', bgColor: 'Khaki', primary: true }]);
   });
 });
 

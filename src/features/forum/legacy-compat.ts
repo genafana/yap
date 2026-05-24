@@ -401,6 +401,9 @@ function transformEntryTable(
 
   const userWrapper = document.createElement('div');
   leftCell.append(userWrapper);
+  const identityContainer = document.createElement('div');
+  userWrapper.append(identityContainer);
+  const primaryBgColor = userTags.find((t) => t.primary === true && t.bgColor != null)?.bgColor;
 
   const nameWrapper = document.createElement('div');
   nameWrapper.style.display = 'block';
@@ -428,23 +431,23 @@ function transformEntryTable(
   if (settings.nik_on_top) {
     nameContainer.style.paddingBottom = '.5em';
     if (userNameElement != null) {
-      userWrapper.append(nameContainer);
+      identityContainer.append(nameContainer);
     }
     if (userPic != null) {
-      userWrapper.append(userPic);
+      identityContainer.append(userPic);
     }
   } else {
     if (userPic != null) {
-      userWrapper.append(userPic);
+      identityContainer.append(userPic);
     }
     nameContainer.style.paddingTop = '.5em';
     if (userNameElement != null) {
-      userWrapper.append(nameContainer);
+      identityContainer.append(nameContainer);
     }
   }
 
   if (userStatus != null) {
-    userWrapper.append(userStatus);
+    identityContainer.append(userStatus);
   }
 
   if (userLabel != null) {
@@ -466,6 +469,16 @@ function transformEntryTable(
       tagsContainer.append(pill);
     }
     userWrapper.append(tagsContainer);
+  }
+
+  // Apply background of the first primary tag either to the identity block or to the whole left column.
+  if (primaryBgColor != null) {
+    if (settings.primary_tag_full_user_bg) {
+      leftCell.style.background = primaryBgColor;
+    } else {
+      identityContainer.style.background = primaryBgColor;
+      identityContainer.style.padding = '0.25em';
+    }
   }
 
   const rightTopCell = row1.insertCell();

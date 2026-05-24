@@ -14,6 +14,11 @@ export interface TagDefinition {
   bgColor?: string;
   /** When true, comments by users who carry this tag are hidden entirely. */
   ignore?: boolean;
+  /**
+   * When true (or absent — treated as true for backward compatibility), the tag's bgColor
+   * is applied as a background highlight to the user's avatar, nickname, and status info.
+   */
+  primary?: boolean;
 }
 
 /** Tags (formerly "groups") map: tagName → definition */
@@ -32,6 +37,8 @@ export interface UserTagData {
   name: string;
   bgColor?: string;
   ignore?: boolean;
+  /** Mirrors TagDefinition.primary — true when the tag should highlight the user's UI areas. */
+  primary?: boolean;
 }
 
 /** username → resolved tag objects (for rendering in the forum) */
@@ -80,15 +87,16 @@ export async function saveUsers(users: UsersMap): Promise<void> {
 }
 
 /**
- * Ensures the system ignore tag exists in storage with ignore: true.
+ * Ensures the system ignore tag exists in storage with ignore: true and primary: true.
  * Idempotent — safe to call on every startup and before rendering.
  */
 export async function ensureIgnoreTag(): Promise<void> {
   const tags = await loadTags();
-  if (tags[IGNORE_TAG_NAME]?.ignore === true) return;
+  const existing = tags[IGNORE_TAG_NAME];
+  if (existing?.ignore === true && existing?.primary === true) return;
   await saveTags({
     ...tags,
-    [IGNORE_TAG_NAME]: { ...(tags[IGNORE_TAG_NAME] ?? {}), ignore: true }
+    [IGNORE_TAG_NAME]: { ...(existing ?? {}), ignore: true, primary: true }
   });
 }
 
@@ -108,6 +116,10 @@ export function buildUserTagsLookup(tags: TagsMap, users: UsersMap): UserTagsLoo
       }
       if (tagDef?.ignore === true) {
         entry.ignore = true;
+      }
+      // Absence of `primary` means the tag IS primary (backward compat).
+      if (tagDef == null || tagDef.primary !== false) {
+        entry.primary = true;
       }
       resolved.push(entry);
     }
@@ -147,7 +159,7 @@ export function convertLegacyFormat(raw: LegacyTagsJson): { tags: TagsMap; users
   const tempUsers: Record<string, Set<string>> = {};
 
   for (const [tagName, info] of Object.entries(raw)) {
-    const tagDef: TagDefinition = {};
+    const tagDef: TagDefinition = { primary: true };
     if (info.color != null && info.color !== '') {
       tagDef.bgColor = info.color;
     }
@@ -260,10 +272,11 @@ export async function importTagsData(
     }
   }
 
-  // Always enforce: ignore tag exists with ignore: true.
+  // Always enforce: ignore tag exists with ignore: true and primary: true.
   finalTags[IGNORE_TAG_NAME] = {
     ...(finalTags[IGNORE_TAG_NAME] ?? {}),
-    ignore: true
+    ignore: true,
+    primary: true
   };
 
   // Always preserve users who were in the ignore list before the import.

@@ -19,6 +19,7 @@ export interface ExtensionSettings {
   show_date_or_age: 'date' | 'age';
   self_highlight_bg: string;
   self_highlight_border: string;
+  primary_tag_full_user_bg: boolean;
   title_bg_color: string;
   message_bg_color: string;
   citate_bg_color: string;
@@ -97,6 +98,12 @@ export const settingDefinitions: {
     type: 'string',
     defaultValue: '1px solid silver',
     descriptionMessage: 'setting_self_highlight_border_description'
+  },
+  primary_tag_full_user_bg: {
+    labelMessage: 'setting_primary_tag_full_user_bg_label',
+    type: 'boolean',
+    defaultValue: false,
+    descriptionMessage: 'setting_primary_tag_full_user_bg_description'
   },
   title_bg_color: {
     labelMessage: 'setting_title_bg_color_label',
@@ -213,6 +220,7 @@ export const defaultSettings: ExtensionSettings = {
   show_date_or_age: settingDefinitions.show_date_or_age.defaultValue,
   self_highlight_bg: settingDefinitions.self_highlight_bg.defaultValue,
   self_highlight_border: settingDefinitions.self_highlight_border.defaultValue,
+  primary_tag_full_user_bg: settingDefinitions.primary_tag_full_user_bg.defaultValue,
   title_bg_color: settingDefinitions.title_bg_color.defaultValue,
   message_bg_color: settingDefinitions.message_bg_color.defaultValue,
   citate_bg_color: settingDefinitions.citate_bg_color.defaultValue,

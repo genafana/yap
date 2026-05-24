@@ -215,7 +215,8 @@ function renameTagInDOM(oldName: string, newName: string, tagsMap: TagsMap): voi
 
 /**
  * Unified dialog for creating a new tag (tagName === null) or editing an
- * existing one. Supports renaming and changing the background colour.
+ * existing one. Supports renaming, changing the background colour, and toggling
+ * the primary flag.
  */
 function openEditTagDialog(
   tagName: string | null,
@@ -226,7 +227,10 @@ function openEditTagDialog(
   document.getElementById(EDIT_DIALOG_ID)?.remove();
 
   const isNew = tagName == null;
-  const currentBgColor = tagName != null ? (tagsMap[tagName]?.bgColor ?? '#e0e0e0') : '#e0e0e0';
+  const currentDef = tagName != null ? tagsMap[tagName] : undefined;
+  const currentBgColor = currentDef?.bgColor ?? '#e0e0e0';
+  // Absent primary means true (backward compat).
+  const currentPrimary = currentDef == null || currentDef.primary !== false;
 
   const dialog = document.createElement('dialog');
   dialog.id = EDIT_DIALOG_ID;
@@ -255,6 +259,15 @@ function openEditTagDialog(
   colorInput.value = currentBgColor;
   colorInput.className = 'yap-dialog__color';
   colorLabel.append(colorLabelText, colorInput);
+
+  const primaryLabel = document.createElement('label');
+  primaryLabel.className = 'yap-dialog__field yap-dialog__field--checkbox';
+  const primaryCheckbox = document.createElement('input');
+  primaryCheckbox.type = 'checkbox';
+  primaryCheckbox.checked = currentPrimary;
+  const primaryLabelText = document.createElement('span');
+  primaryLabelText.textContent = getMessage('tag_edit_primary');
+  primaryLabel.append(primaryCheckbox, primaryLabelText);
 
   const error = createErrorParagraph();
 
@@ -288,7 +301,11 @@ function openEditTagDialog(
         await renameTag(tagName!, newName);
       }
       const current = await loadTags();
-      current[newName] = { ...(current[newName] ?? {}), bgColor: colorInput.value };
+      current[newName] = {
+        ...(current[newName] ?? {}),
+        bgColor: colorInput.value,
+        primary: primaryCheckbox.checked
+      };
       await saveTags(current);
       if (!isNew) {
         const newTagsMap = await loadTags();
@@ -306,7 +323,7 @@ function openEditTagDialog(
   });
 
   footer.append(cancelBtn, saveBtn);
-  dialog.append(title, nameLabel, colorLabel, error, footer);
+  dialog.append(title, nameLabel, colorLabel, primaryLabel, error, footer);
   document.body.append(dialog);
   dialog.showModal();
   requestAnimationFrame(() => { nameInput.select(); });

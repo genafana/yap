@@ -221,6 +221,12 @@
   "setting_self_highlight_border_description": {
     "message": "Оставьте пустым, чтобы отключить границу. Формат: толщина стиль цвет. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/border-style\">Стили границ</a>"
   },
+  "setting_primary_tag_full_user_bg_label": {
+    "message": "Общая подсветка пользователя"
+  },
+  "setting_primary_tag_full_user_bg_description": {
+    "message": "Если включено, основной тег окрашивает весь левый столбец комментария. Если выключено — подсвечивается только блок пользователя."
+  },
   "setting_title_bg_color_label": {
     "message": "Цвет фона строки-заголовка и левого столбца"
   },
@@ -436,6 +442,9 @@
   },
   "tag_edit_new_title": {
     "message": "Новый тег"
+  },
+  "tag_edit_primary": {
+    "message": "Основной (подсвечивать пользователя)"
   },
   "tags_dialog_new_tag_btn": {
     "message": "Новый тег"

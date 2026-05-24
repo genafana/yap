@@ -221,6 +221,12 @@
   "setting_self_highlight_border_description": {
     "message": "Leave empty to disable the border. Format: width style color. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/border-style\">Border styles</a>"
   },
+  "setting_primary_tag_full_user_bg_label": {
+    "message": "Global user highlight"
+  },
+  "setting_primary_tag_full_user_bg_description": {
+    "message": "When enabled, the primary tag colors the entire left comment column. When disabled, only the user identity block is highlighted."
+  },
   "setting_title_bg_color_label": {
     "message": "Header row and left column background color"
   },
@@ -436,6 +442,9 @@
   },
   "tag_edit_new_title": {
     "message": "New tag"
+  },
+  "tag_edit_primary": {
+    "message": "Primary (highlight user)"
   },
   "tags_dialog_new_tag_btn": {
     "message": "New tag"

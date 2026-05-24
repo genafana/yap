@@ -5,6 +5,9 @@ import { getBrowser } from './browser-api';
 export const TAGS_STORAGE_KEY = 'yap-lamp-tags';
 export const USERS_STORAGE_KEY = 'yap-lamp-users';
 
+/** The name of the protected system ignore tag. Always present; cannot be deleted, renamed, or merged away. */
+export const IGNORE_TAG_NAME = 'Игнор';
+
 // ── Core domain types ─────────────────────────────────────────────────────────
 
 export interface TagDefinition {
@@ -74,6 +77,19 @@ export async function saveTags(tags: TagsMap): Promise<void> {
 export async function saveUsers(users: UsersMap): Promise<void> {
   const browser = await getBrowser();
   await browser.storage.local.set({ [USERS_STORAGE_KEY]: users });
+}
+
+/**
+ * Ensures the system ignore tag exists in storage with ignore: true.
+ * Idempotent — safe to call on every startup and before rendering.
+ */
+export async function ensureIgnoreTag(): Promise<void> {
+  const tags = await loadTags();
+  if (tags[IGNORE_TAG_NAME]?.ignore === true) return;
+  await saveTags({
+    ...tags,
+    [IGNORE_TAG_NAME]: { ...(tags[IGNORE_TAG_NAME] ?? {}), ignore: true }
+  });
 }
 
 // ── Lookup builder ────────────────────────────────────────────────────────────
@@ -214,30 +230,54 @@ export async function importTagsData(
   incoming: { tags: TagsMap; users: UsersMap },
   mode: 'replace' | 'merge'
 ): Promise<void> {
-  if (mode === 'replace') {
-    await saveTags(incoming.tags);
-    await saveUsers(incoming.users);
-    return;
-  }
-
-  // merge: union of tags per user; imported tag definitions override existing
   const [existingTags, existingUsers] = await Promise.all([loadTags(), loadUsers()]);
 
-  const mergedTags: TagsMap = { ...existingTags, ...incoming.tags };
+  // Snapshot users currently in the ignore list — preserved across all import modes.
+  const existingIgnoreUsers = new Set(
+    Object.entries(existingUsers)
+      .filter(([, def]) => def.tags.includes(IGNORE_TAG_NAME))
+      .map(([username]) => username)
+  );
 
-  const mergedUsers: UsersMap = { ...existingUsers };
-  for (const [username, userDef] of Object.entries(incoming.users)) {
-    const existing = mergedUsers[username];
-    if (existing == null) {
-      mergedUsers[username] = userDef;
-    } else {
-      const combined = Array.from(new Set([...existing.tags, ...userDef.tags]));
-      mergedUsers[username] = { tags: combined };
+  let finalTags: TagsMap;
+  let finalUsers: UsersMap;
+
+  if (mode === 'replace') {
+    finalTags = { ...incoming.tags };
+    finalUsers = { ...incoming.users };
+  } else {
+    // merge: union of tags per user; imported tag definitions override existing
+    finalTags = { ...existingTags, ...incoming.tags };
+    finalUsers = { ...existingUsers };
+    for (const [username, userDef] of Object.entries(incoming.users)) {
+      const existing = finalUsers[username];
+      if (existing == null) {
+        finalUsers[username] = userDef;
+      } else {
+        const combined = Array.from(new Set([...existing.tags, ...userDef.tags]));
+        finalUsers[username] = { tags: combined };
+      }
     }
   }
 
-  await saveTags(mergedTags);
-  await saveUsers(mergedUsers);
+  // Always enforce: ignore tag exists with ignore: true.
+  finalTags[IGNORE_TAG_NAME] = {
+    ...(finalTags[IGNORE_TAG_NAME] ?? {}),
+    ignore: true
+  };
+
+  // Always preserve users who were in the ignore list before the import.
+  for (const username of existingIgnoreUsers) {
+    const userEntry = finalUsers[username];
+    if (userEntry == null) {
+      finalUsers[username] = { tags: [IGNORE_TAG_NAME] };
+    } else if (!userEntry.tags.includes(IGNORE_TAG_NAME)) {
+      finalUsers[username] = { ...userEntry, tags: [...userEntry.tags, IGNORE_TAG_NAME] };
+    }
+  }
+
+  await saveTags(finalTags);
+  await saveUsers(finalUsers);
 }
 
 // ── Delete tag ────────────────────────────────────────────────────────────────
@@ -247,6 +287,7 @@ export async function importTagsData(
  * Users whose tag list becomes empty are removed from UsersMap entirely.
  */
 export async function deleteTag(tagName: string): Promise<void> {
+  if (tagName === IGNORE_TAG_NAME) return;
   const [tags, users] = await Promise.all([loadTags(), loadUsers()]);
 
   const newTags = Object.fromEntries(
@@ -271,6 +312,7 @@ export async function deleteTag(tagName: string): Promise<void> {
  * Throws if newName already exists or equals oldName.
  */
 export async function renameTag(oldName: string, newName: string): Promise<void> {
+  if (oldName === IGNORE_TAG_NAME) return;
   if (oldName === newName) return;
 
   const [tags, users] = await Promise.all([loadTags(), loadUsers()]);
@@ -302,6 +344,7 @@ export async function renameTag(oldName: string, newName: string): Promise<void>
  * removes it and ensures targetTag is present. Removes sourceTag from TagsMap.
  */
 export async function mergeTag(sourceTag: string, targetTag: string): Promise<void> {
+  if (sourceTag === IGNORE_TAG_NAME) return;
   if (sourceTag === targetTag) return;
 
   const [tags, users] = await Promise.all([loadTags(), loadUsers()]);

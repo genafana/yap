@@ -20,6 +20,7 @@ import {
   buildNativeExport,
   convertLegacyFormat,
   detectImportFormat,
+  ensureIgnoreTag,
   normalizeLegacyUsers,
   parseImport,
   importTagsData,
@@ -30,6 +31,7 @@ import {
   type LegacyTagsJson,
   type TagsMap,
   type UsersMap,
+  IGNORE_TAG_NAME,
   TAGS_STORAGE_KEY,
   USERS_STORAGE_KEY
 } from '../../src/utils/tags';
@@ -226,7 +228,7 @@ describe('importTagsData', () => {
     }
   });
 
-  it('replaces existing data in replace mode', async () => {
+  it('replaces existing data in replace mode, but always preserves the ignore tag', async () => {
     mockStorage[TAGS_STORAGE_KEY] = { OldTag: { bgColor: 'Red' } };
     mockStorage[USERS_STORAGE_KEY] = { oldUser: { tags: ['OldTag'] } };
 
@@ -235,11 +237,17 @@ describe('importTagsData', () => {
       'replace'
     );
 
-    expect(mockStorage[TAGS_STORAGE_KEY]).toEqual({ NewTag: { bgColor: 'Blue' } });
-    expect(mockStorage[USERS_STORAGE_KEY]).toEqual({ newUser: { tags: ['NewTag'] } });
+    const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(savedTags['NewTag']).toEqual({ bgColor: 'Blue' });
+    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+    expect(savedTags).not.toHaveProperty('OldTag');
+
+    const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(savedUsers['newUser']).toEqual({ tags: ['NewTag'] });
+    expect(savedUsers).not.toHaveProperty('oldUser');
   });
 
-  it('merges data in merge mode', async () => {
+  it('merges data in merge mode, always enforces ignore tag', async () => {
     mockStorage[TAGS_STORAGE_KEY] = { TagA: { bgColor: 'Red' } };
     mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['TagA'] } };
 
@@ -251,11 +259,76 @@ describe('importTagsData', () => {
     const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
     expect(savedTags['TagA']).toEqual({ bgColor: 'Red' });
     expect(savedTags['TagB']).toEqual({ bgColor: 'Blue' });
+    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
 
     const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
     expect(savedUsers['alice'].tags).toContain('TagA');
     expect(savedUsers['alice'].tags).toContain('TagB');
     expect(savedUsers['bob']).toEqual({ tags: ['TagB'] });
+  });
+
+  it('replace mode preserves existing ignore-tag users not in the import', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true }, TagA: {} };
+    mockStorage[USERS_STORAGE_KEY] = { spammer: { tags: [IGNORE_TAG_NAME] } };
+
+    await importTagsData(
+      { tags: { NewTag: {} }, users: { bob: { tags: ['NewTag'] } } },
+      'replace'
+    );
+
+    const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(savedUsers['spammer']?.tags).toContain(IGNORE_TAG_NAME);
+    expect(savedUsers['bob']?.tags).toEqual(['NewTag']);
+  });
+
+  it('replace mode merges incoming ignore users into preserved ignore list', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true } };
+    mockStorage[USERS_STORAGE_KEY] = { existing: { tags: [IGNORE_TAG_NAME] } };
+
+    await importTagsData(
+      { tags: { [IGNORE_TAG_NAME]: { ignore: true } }, users: { newcomer: { tags: [IGNORE_TAG_NAME] } } },
+      'replace'
+    );
+
+    const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(savedUsers['existing']?.tags).toContain(IGNORE_TAG_NAME);
+    expect(savedUsers['newcomer']?.tags).toContain(IGNORE_TAG_NAME);
+  });
+});
+
+describe('ensureIgnoreTag', () => {
+  beforeEach(() => {
+    for (const k of Object.keys(mockStorage)) {
+      delete mockStorage[k];
+    }
+  });
+
+  it('creates the ignore tag when storage is empty', async () => {
+    await ensureIgnoreTag();
+    const tags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(tags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+  });
+
+  it('creates the ignore tag when it does not exist yet', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Other: {} };
+    await ensureIgnoreTag();
+    const tags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(tags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+    expect(tags['Other']).toEqual({});
+  });
+
+  it('does not write when ignore tag already exists with ignore:true', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true } };
+    const setBefore = JSON.stringify(mockStorage);
+    await ensureIgnoreTag();
+    expect(JSON.stringify(mockStorage)).toEqual(setBefore);
+  });
+
+  it('fixes ignore tag when ignore:true flag is missing', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { bgColor: '#ff0000' } };
+    await ensureIgnoreTag();
+    const tags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(tags[IGNORE_TAG_NAME]).toEqual({ bgColor: '#ff0000', ignore: true });
   });
 });
 
@@ -328,6 +401,17 @@ describe('deleteTag', () => {
     expect(savedTags).toHaveProperty('Dev');
     expect(savedUsers['alice']?.tags).toEqual(['Dev']);
   });
+
+  it('is a no-op for the ignore tag', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true } };
+    mockStorage[USERS_STORAGE_KEY] = { spammer: { tags: [IGNORE_TAG_NAME] } };
+
+    await deleteTag(IGNORE_TAG_NAME);
+
+    const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+    expect((mockStorage[USERS_STORAGE_KEY] as UsersMap)['spammer']?.tags).toContain(IGNORE_TAG_NAME);
+  });
 });
 
 describe('renameTag', () => {
@@ -381,6 +465,17 @@ describe('renameTag', () => {
 
     expect(mockStorage[TAGS_STORAGE_KEY]).toEqual({ Other: { bgColor: '#0f0' } });
     expect((mockStorage[USERS_STORAGE_KEY] as UsersMap)['alice'].tags).toEqual(['Other']);
+  });
+
+  it('is a no-op for the ignore tag', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true } };
+    mockStorage[USERS_STORAGE_KEY] = {};
+
+    await renameTag(IGNORE_TAG_NAME, 'NewName');
+
+    const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+    expect(savedTags).not.toHaveProperty('NewName');
   });
 });
 
@@ -450,5 +545,31 @@ describe('mergeTag', () => {
 
     expect(mockStorage[TAGS_STORAGE_KEY]).toEqual({ Tgt: {} });
     expect((mockStorage[USERS_STORAGE_KEY] as UsersMap)['alice'].tags).toEqual(['Tgt']);
+  });
+
+  it('is a no-op when source is the ignore tag', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true }, Other: {} };
+    mockStorage[USERS_STORAGE_KEY] = { spammer: { tags: [IGNORE_TAG_NAME] } };
+
+    await mergeTag(IGNORE_TAG_NAME, 'Other');
+
+    const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+    expect((mockStorage[USERS_STORAGE_KEY] as UsersMap)['spammer']?.tags).toContain(IGNORE_TAG_NAME);
+  });
+
+  it('allows merging another tag INTO the ignore tag', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { [IGNORE_TAG_NAME]: { ignore: true }, Trash: {} };
+    mockStorage[USERS_STORAGE_KEY] = { spammer: { tags: ['Trash'] } };
+
+    await mergeTag('Trash', IGNORE_TAG_NAME);
+
+    const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(savedTags).not.toHaveProperty('Trash');
+    expect(savedTags[IGNORE_TAG_NAME]).toEqual({ ignore: true });
+
+    const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(savedUsers['spammer']?.tags).toContain(IGNORE_TAG_NAME);
+    expect(savedUsers['spammer']?.tags).not.toContain('Trash');
   });
 });

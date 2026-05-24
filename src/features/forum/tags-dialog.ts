@@ -1,6 +1,8 @@
 import type { MessageGetter } from '../../utils/i18n';
 import {
   deleteTag,
+  ensureIgnoreTag,
+  IGNORE_TAG_NAME,
   loadTags,
   loadUsers,
   mergeTag,
@@ -427,6 +429,9 @@ function showTagRowContextMenu(
   getMessage: MessageGetter,
   onChanged?: () => void
 ): void {
+  // The ignore tag is protected — no context menu.
+  if (tagName === IGNORE_TAG_NAME) return;
+
   dismissMiniMenu();
 
   const menu = document.createElement('dialog');
@@ -491,6 +496,7 @@ export function openTagsDialog(username: string, getMessage: MessageGetter): voi
 }
 
 async function buildAndShowDialog(username: string, getMessage: MessageGetter): Promise<void> {
+  await ensureIgnoreTag();
   let tagsMap = await loadTags();
   let usersMap = await loadUsers();
 

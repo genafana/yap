@@ -63,13 +63,13 @@ To run the same checks as the `CI` workflow locally:
 **Linux/macOS**
 
 ```bash
-bash ./scripts/run-ci-checks.sh
+bash ./scripts/run-ci-checks.sh --verify-only
 ```
 
 **Windows**
 
 ```bat
-scripts\run-ci-checks.bat
+scripts\run-ci-checks.bat --verify-only
 ```
 
 The script installs dependencies with `npm ci`, runs the verify suite, and runs commitlint when a commit range is available.
@@ -326,7 +326,7 @@ The codebase is organized around a standard extension layout:
 - `src/entrypoints/options/` — options UI
 - `src/utils/` — shared runtime utilities
 - `src/features/` — feature modules
-- `src/domain/` — domain and storage logic
+- `src/domain/` — reserved for domain modules (currently placeholder)
 
 ## Reference links
 

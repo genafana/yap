@@ -103,7 +103,7 @@ bash ./scripts/run-ci-checks.sh --verify-only
 Windows:
 
 ```bat
-scripts\run-ci-checks.bat
+scripts\run-ci-checks.bat --verify-only
 ```
 
 Скрипт сам делает `npm ci`, затем запускает verify-набор (`lint`, `typecheck`, `test:unit`, `build`, `lint:firefox`). Если доступен диапазон коммитов, он дополнительно запускает `commitlint`.
@@ -118,4 +118,4 @@ scripts\run-ci-checks.bat
 1. выносить чистую логику в функции, пригодные для unit tests;
 2. не дублировать browser-specific manifest-файлы;
 3. не хранить store credentials в репозитории;
-4. перед пушем предпочитать `scripts/run-ci-checks.sh` или `scripts\run-ci-checks.bat`, чтобы локально повторить CI.
+4. перед пушем предпочитать `scripts/run-ci-checks.sh --verify-only` или `scripts\run-ci-checks.bat --verify-only`, чтобы локально повторить CI.

@@ -3,6 +3,8 @@ import {
   deleteTag,
   loadTags,
   loadUsers,
+  mergeTag,
+  renameTag,
   saveTags,
   saveUsers,
   type TagsMap
@@ -11,6 +13,8 @@ import { getContrastColor } from '../../utils/color';
 
 const DIALOG_ID = 'yap-tags-dialog';
 const CONFIRM_DIALOG_ID = 'yap-tags-confirm-dialog';
+const RENAME_DIALOG_ID = 'yap-tags-rename-dialog';
+const MERGE_DIALOG_ID = 'yap-tags-merge-dialog';
 
 // ── In-place DOM update helpers ───────────────────────────────────────────────
 
@@ -53,18 +57,11 @@ function refreshTagPillsInDOM(
     const container = document.createElement('div');
     container.className = 'user-tags';
 
-    // Mirror ctxm attribute only when context menu infrastructure is present
-    const ctxMenuActive = document.getElementById('ctxm-overlay') != null;
-
     for (const tagName of selectedTagNames) {
       const pill = document.createElement('span');
       pill.className = 'user-tag';
       pill.textContent = tagName;
       pill.dataset.tagName = tagName;
-      if (ctxMenuActive) {
-        pill.setAttribute('ctxm', 'tag_actions');
-        pill.classList.add('has-context-menu');
-      }
       const tagDef = tagsMap[tagName];
       const bg = tagDef?.bgColor;
       if (bg != null) {
@@ -165,7 +162,242 @@ export function openDeleteTagConfirm(
   });
 }
 
-// ── Tags edit dialog ──────────────────────────────────────────────────────────
+/**
+ * Updates all pill spans for the given tag with the new name and styles.
+ */
+function renameTagInDOM(oldName: string, newName: string, tagsMap: TagsMap): void {
+  const pills = document.querySelectorAll<HTMLElement>(
+    `.user-tag[data-tag-name="${CSS.escape(oldName)}"]`
+  );
+  for (const pill of pills) {
+    pill.dataset.tagName = newName;
+    pill.textContent = newName;
+    const tagDef = tagsMap[newName];
+    const bg = tagDef?.bgColor;
+    if (bg != null) {
+      pill.style.background = bg;
+      pill.style.color = getContrastColor(bg);
+    } else {
+      pill.style.background = '';
+      pill.style.color = '';
+    }
+  }
+}
+
+// ── Rename tag dialog ─────────────────────────────────────────────────────────
+
+function openRenameTagDialog(
+  tagName: string,
+  getMessage: MessageGetter,
+  onChanged?: () => void
+): void {
+  document.getElementById(RENAME_DIALOG_ID)?.remove();
+
+  const dialog = document.createElement('dialog');
+  dialog.id = RENAME_DIALOG_ID;
+  dialog.className = 'yap-dialog yap-dialog--confirm';
+
+  const title = document.createElement('h3');
+  title.className = 'yap-dialog__title';
+  title.textContent = getMessage('tag_rename_title');
+
+  const fieldLabel = document.createElement('label');
+  fieldLabel.className = 'yap-dialog__field';
+  const fieldText = document.createElement('span');
+  fieldText.textContent = getMessage('tag_rename_new_name');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'yap-dialog__input';
+  input.value = tagName;
+  fieldLabel.append(fieldText, input);
+
+  const error = document.createElement('p');
+  error.className = 'yap-dialog__error';
+  error.style.display = 'none';
+
+  const footer = document.createElement('div');
+  footer.className = 'yap-dialog__footer';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.className = 'yap-dialog__btn yap-dialog__btn--secondary';
+  cancelBtn.textContent = getMessage('tags_dialog_cancel');
+  cancelBtn.addEventListener('click', () => {
+    dialog.close();
+    dialog.remove();
+  });
+
+  const renameBtn = document.createElement('button');
+  renameBtn.type = 'button';
+  renameBtn.className = 'yap-dialog__btn yap-dialog__btn--primary';
+  renameBtn.textContent = getMessage('tag_rename_button');
+  renameBtn.addEventListener('click', () => {
+    const newName = input.value.trim();
+    if (newName === '') {
+      error.textContent = getMessage('tag_rename_empty');
+      error.style.display = '';
+      return;
+    }
+    if (newName === tagName) {
+      dialog.close();
+      dialog.remove();
+      return;
+    }
+    error.style.display = 'none';
+    void renameTag(tagName, newName).then(async () => {
+      const newTagsMap = await loadTags();
+      renameTagInDOM(tagName, newName, newTagsMap);
+      dialog.close();
+      dialog.remove();
+      onChanged?.();
+    }).catch(() => {
+      error.textContent = getMessage('tag_rename_duplicate');
+      error.style.display = '';
+    });
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') renameBtn.click();
+    if (e.key === 'Escape') cancelBtn.click();
+  });
+
+  footer.append(cancelBtn, renameBtn);
+  dialog.append(title, fieldLabel, error, footer);
+  document.body.append(dialog);
+  (dialog as HTMLDialogElement).showModal();
+
+  requestAnimationFrame(() => {
+    input.select();
+  });
+
+  dialog.addEventListener('click', (event) => {
+    const rect = dialog.getBoundingClientRect();
+    if (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    ) {
+      dialog.close();
+      dialog.remove();
+    }
+  });
+}
+
+// ── Merge tag dialog ──────────────────────────────────────────────────────────
+
+function openMergeTagDialog(
+  sourceTag: string,
+  tagsMap: TagsMap,
+  getMessage: MessageGetter,
+  onChanged?: () => void
+): void {
+  document.getElementById(MERGE_DIALOG_ID)?.remove();
+
+  const otherTags = Object.keys(tagsMap).filter((t) => t !== sourceTag);
+
+  const dialog = document.createElement('dialog');
+  dialog.id = MERGE_DIALOG_ID;
+  dialog.className = 'yap-dialog';
+
+  const title = document.createElement('h3');
+  title.className = 'yap-dialog__title';
+  title.textContent = getMessage('tag_merge_title', sourceTag);
+
+  const list = document.createElement('div');
+  list.className = 'yap-dialog__checkboxes';
+
+  for (const tagName of otherTags) {
+    const row = document.createElement('label');
+    row.className = 'yap-dialog__tag-row';
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'merge-target';
+    radio.value = tagName;
+    radio.className = 'yap-dialog__tag-cb';
+
+    const swatch = document.createElement('span');
+    swatch.className = 'yap-dialog__swatch';
+    const bg = tagsMap[tagName]?.bgColor;
+    if (bg != null) swatch.style.background = bg;
+
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = tagName;
+
+    row.append(radio, swatch, nameSpan);
+    list.append(row);
+  }
+
+  const error = document.createElement('p');
+  error.className = 'yap-dialog__error';
+  error.style.display = 'none';
+
+  const footer = document.createElement('div');
+  footer.className = 'yap-dialog__footer';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.className = 'yap-dialog__btn yap-dialog__btn--secondary';
+  cancelBtn.textContent = getMessage('tags_dialog_cancel');
+  cancelBtn.addEventListener('click', () => {
+    dialog.close();
+    dialog.remove();
+  });
+
+  const mergeBtn = document.createElement('button');
+  mergeBtn.type = 'button';
+  mergeBtn.className = 'yap-dialog__btn yap-dialog__btn--primary';
+  mergeBtn.textContent = getMessage('tag_merge_button');
+  mergeBtn.addEventListener('click', () => {
+    const selected = dialog.querySelector<HTMLInputElement>('input[name="merge-target"]:checked');
+    if (selected == null) {
+      error.textContent = getMessage('tag_merge_no_selection');
+      error.style.display = '';
+      return;
+    }
+    const targetTag = selected.value;
+    error.style.display = 'none';
+
+    void (async () => {
+      const oldUsers = await loadUsers();
+      const affectedUsers = Object.entries(oldUsers)
+        .filter(([, def]) => def.tags.includes(sourceTag))
+        .map(([username]) => username);
+
+      await mergeTag(sourceTag, targetTag);
+
+      const [newTagsMap, newUsersMap] = await Promise.all([loadTags(), loadUsers()]);
+      for (const username of affectedUsers) {
+        refreshTagPillsInDOM(username, newTagsMap, newUsersMap[username]?.tags ?? []);
+      }
+      // Remove any remaining sourceTag pills (safety: no user should have them now)
+      deleteTagFromDOM(sourceTag);
+
+      dialog.close();
+      dialog.remove();
+      onChanged?.();
+    })();
+  });
+
+  footer.append(cancelBtn, mergeBtn);
+  dialog.append(title, list, error, footer);
+  document.body.append(dialog);
+  (dialog as HTMLDialogElement).showModal();
+
+  dialog.addEventListener('click', (event) => {
+    const rect = dialog.getBoundingClientRect();
+    if (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    ) {
+      dialog.close();
+      dialog.remove();
+    }
+  });
+}
 
 const MINI_MENU_ID = 'yap-tag-row-ctxm';
 
@@ -187,33 +419,48 @@ function showTagRowContextMenu(
   x: number,
   y: number,
   tagName: string,
+  tagsMap: TagsMap,
   _tagsDialog: HTMLDialogElement,
   getMessage: MessageGetter,
-  onDeleted?: () => void
+  onChanged?: () => void
 ): void {
   dismissMiniMenu();
 
   const menu = document.createElement('dialog');
   menu.id = MINI_MENU_ID;
   menu.className = 'yap-tag-row-ctxm';
-  // Position at cursor; override browser default dialog centering
   menu.style.left = `${x}px`;
   menu.style.top = `${y}px`;
 
-  const item = document.createElement('button');
-  item.type = 'button';
-  item.className = 'yap-tag-row-ctxm__item';
-  item.textContent = getMessage('context_tag_delete');
-  item.addEventListener('click', () => {
-    dismissMiniMenu();
-    openDeleteTagConfirm(tagName, getMessage, onDeleted);
-  });
+  const makeItem = (label: string, danger: boolean, onClick: () => void): HTMLButtonElement => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = danger
+      ? 'yap-tag-row-ctxm__item yap-tag-row-ctxm__item--danger'
+      : 'yap-tag-row-ctxm__item';
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      dismissMiniMenu();
+      onClick();
+    });
+    return btn;
+  };
 
-  menu.append(item);
+  menu.append(
+    makeItem(getMessage('context_tag_rename'), false, () => {
+      openRenameTagDialog(tagName, getMessage, onChanged);
+    }),
+    makeItem(getMessage('context_tag_merge_into'), false, () => {
+      openMergeTagDialog(tagName, tagsMap, getMessage, onChanged);
+    }),
+    makeItem(getMessage('context_tag_delete'), true, () => {
+      openDeleteTagConfirm(tagName, getMessage, onChanged);
+    })
+  );
+
   document.body.append(menu);
   (menu as HTMLDialogElement).showModal();
 
-  // Backdrop click (outside the menu box) closes it
   menu.addEventListener('click', (e) => {
     const rect = menu.getBoundingClientRect();
     const outside =
@@ -298,6 +545,7 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
           e.preventDefault();
           showTagRowContextMenu(
             e.clientX, e.clientY, tagName,
+            tagsMap,
             dialog as HTMLDialogElement, getMessage,
             () => {
               void Promise.all([loadTags(), loadUsers()]).then(([t, u]) => {

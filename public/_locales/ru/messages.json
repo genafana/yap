@@ -402,5 +402,36 @@
   },
   "tag_delete_button": {
     "message": "Удалить"
+  },
+  "context_tag_rename": {
+    "message": "Переименовать тег…"
+  },
+  "tag_rename_title": {
+    "message": "Переименовать тег"
+  },
+  "tag_rename_new_name": {
+    "message": "Новое имя"
+  },
+  "tag_rename_button": {
+    "message": "Переименовать"
+  },
+  "tag_rename_empty": {
+    "message": "Название тега не может быть пустым."
+  },
+  "tag_rename_duplicate": {
+    "message": "Тег с таким именем уже существует."
+  },
+  "context_tag_merge_into": {
+    "message": "Влить в…"
+  },
+  "tag_merge_title": {
+    "message": "Влить тег '$TAG$' в:",
+    "placeholders": { "tag": { "content": "$1" } }
+  },
+  "tag_merge_button": {
+    "message": "Влить"
+  },
+  "tag_merge_no_selection": {
+    "message": "Выберите тег назначения."
   }
 }

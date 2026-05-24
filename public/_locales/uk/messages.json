@@ -402,5 +402,36 @@
   },
   "tag_delete_button": {
     "message": "Видалити"
+  },
+  "context_tag_rename": {
+    "message": "Перейменувати тег…"
+  },
+  "tag_rename_title": {
+    "message": "Перейменувати тег"
+  },
+  "tag_rename_new_name": {
+    "message": "Нова назва"
+  },
+  "tag_rename_button": {
+    "message": "Перейменувати"
+  },
+  "tag_rename_empty": {
+    "message": "Назва тегу не може бути порожньою."
+  },
+  "tag_rename_duplicate": {
+    "message": "Тег з такою назвою вже існує."
+  },
+  "context_tag_merge_into": {
+    "message": "Злити у…"
+  },
+  "tag_merge_title": {
+    "message": "Злити тег '$TAG$' у:",
+    "placeholders": { "tag": { "content": "$1" } }
+  },
+  "tag_merge_button": {
+    "message": "Злити"
+  },
+  "tag_merge_no_selection": {
+    "message": "Оберіть тег-призначення."
   }
 }

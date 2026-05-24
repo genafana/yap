@@ -24,6 +24,9 @@ import {
   parseImport,
   importTagsData,
   loadUserTagsLookup,
+  deleteTag,
+  renameTag,
+  mergeTag,
   type LegacyTagsJson,
   type TagsMap,
   type UsersMap,
@@ -276,8 +279,6 @@ describe('loadUserTagsLookup', () => {
   });
 });
 
-import { deleteTag } from '../../src/utils/tags';
-
 describe('deleteTag', () => {
   beforeEach(() => {
     for (const k of Object.keys(mockStorage)) {
@@ -326,5 +327,108 @@ describe('deleteTag', () => {
     const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
     expect(savedTags).toHaveProperty('Dev');
     expect(savedUsers['alice']?.tags).toEqual(['Dev']);
+  });
+});
+
+describe('renameTag', () => {
+  beforeEach(() => {
+    for (const k of Object.keys(mockStorage)) {
+      delete mockStorage[k];
+    }
+  });
+
+  it('renames the tag in TagsMap and all user entries', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { OldTag: { bgColor: '#f00' }, Other: {} };
+    mockStorage[USERS_STORAGE_KEY] = {
+      alice: { tags: ['OldTag', 'Other'] },
+      bob: { tags: ['OldTag'] }
+    };
+
+    await renameTag('OldTag', 'NewTag');
+
+    const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(savedTags).not.toHaveProperty('OldTag');
+    expect(savedTags['NewTag']).toEqual({ bgColor: '#f00' });
+    expect(savedTags['Other']).toEqual({});
+
+    const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(savedUsers['alice'].tags).toContain('NewTag');
+    expect(savedUsers['alice'].tags).not.toContain('OldTag');
+    expect(savedUsers['bob'].tags).toEqual(['NewTag']);
+  });
+
+  it('is a no-op when oldName === newName', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Tag: { bgColor: '#f00' } };
+    mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Tag'] } };
+
+    await renameTag('Tag', 'Tag');
+
+    expect(mockStorage[TAGS_STORAGE_KEY]).toEqual({ Tag: { bgColor: '#f00' } });
+  });
+
+  it('throws when newName already exists', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { TagA: {}, TagB: {} };
+    mockStorage[USERS_STORAGE_KEY] = {};
+
+    await expect(renameTag('TagA', 'TagB')).rejects.toThrow();
+  });
+});
+
+describe('mergeTag', () => {
+  beforeEach(() => {
+    for (const k of Object.keys(mockStorage)) {
+      delete mockStorage[k];
+    }
+  });
+
+  it('removes sourceTag and adds targetTag to affected users', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Src: {}, Tgt: {} };
+    mockStorage[USERS_STORAGE_KEY] = {
+      alice: { tags: ['Src'] },
+      bob: { tags: ['Tgt'] }
+    };
+
+    await mergeTag('Src', 'Tgt');
+
+    const savedTags = mockStorage[TAGS_STORAGE_KEY] as TagsMap;
+    expect(savedTags).not.toHaveProperty('Src');
+    expect(savedTags).toHaveProperty('Tgt');
+
+    const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(savedUsers['alice'].tags).toEqual(['Tgt']);
+    expect(savedUsers['bob'].tags).toEqual(['Tgt']);
+  });
+
+  it('does not duplicate targetTag when user already has it', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Src: {}, Tgt: {} };
+    mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Src', 'Tgt'] } };
+
+    await mergeTag('Src', 'Tgt');
+
+    const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(savedUsers['alice'].tags).toEqual(['Tgt']);
+  });
+
+  it('leaves users without sourceTag unchanged', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Src: {}, Tgt: {}, Other: {} };
+    mockStorage[USERS_STORAGE_KEY] = {
+      alice: { tags: ['Src'] },
+      bob: { tags: ['Other'] }
+    };
+
+    await mergeTag('Src', 'Tgt');
+
+    const savedUsers = mockStorage[USERS_STORAGE_KEY] as UsersMap;
+    expect(savedUsers['bob'].tags).toEqual(['Other']);
+  });
+
+  it('is a no-op when source === target', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Tag: {} };
+    mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Tag'] } };
+
+    await mergeTag('Tag', 'Tag');
+
+    expect(mockStorage[TAGS_STORAGE_KEY]).toEqual({ Tag: {} });
+    expect((mockStorage[USERS_STORAGE_KEY] as UsersMap)['alice'].tags).toEqual(['Tag']);
   });
 });

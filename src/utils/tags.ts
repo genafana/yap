@@ -263,3 +263,63 @@ export async function deleteTag(tagName: string): Promise<void> {
 
   await Promise.all([saveTags(newTags), saveUsers(newUsers)]);
 }
+
+// ── Rename tag ────────────────────────────────────────────────────────────────
+
+/**
+ * Renames a tag in TagsMap and updates every user's tag array.
+ * Throws if newName already exists or equals oldName.
+ */
+export async function renameTag(oldName: string, newName: string): Promise<void> {
+  if (oldName === newName) return;
+
+  const [tags, users] = await Promise.all([loadTags(), loadUsers()]);
+
+  if (newName in tags) {
+    throw new Error(`Tag "${newName}" already exists`);
+  }
+
+  const newTags: TagsMap = {};
+  for (const [k, v] of Object.entries(tags)) {
+    newTags[k === oldName ? newName : k] = v;
+  }
+
+  const newUsers: UsersMap = {};
+  for (const [username, userDef] of Object.entries(users)) {
+    newUsers[username] = {
+      ...userDef,
+      tags: userDef.tags.map((t) => (t === oldName ? newName : t))
+    };
+  }
+
+  await Promise.all([saveTags(newTags), saveUsers(newUsers)]);
+}
+
+// ── Merge tag ─────────────────────────────────────────────────────────────────
+
+/**
+ * Merges sourceTag into targetTag: for every user who carries sourceTag,
+ * removes it and ensures targetTag is present. Removes sourceTag from TagsMap.
+ */
+export async function mergeTag(sourceTag: string, targetTag: string): Promise<void> {
+  if (sourceTag === targetTag) return;
+
+  const [tags, users] = await Promise.all([loadTags(), loadUsers()]);
+
+  const newTags = Object.fromEntries(
+    Object.entries(tags).filter(([k]) => k !== sourceTag)
+  );
+
+  const newUsers: UsersMap = {};
+  for (const [username, userDef] of Object.entries(users)) {
+    if (!userDef.tags.includes(sourceTag)) {
+      newUsers[username] = userDef;
+      continue;
+    }
+    const filtered = userDef.tags.filter((t) => t !== sourceTag);
+    const merged = filtered.includes(targetTag) ? filtered : [...filtered, targetTag];
+    newUsers[username] = { ...userDef, tags: merged };
+  }
+
+  await Promise.all([saveTags(newTags), saveUsers(newUsers)]);
+}

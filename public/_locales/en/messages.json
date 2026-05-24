@@ -402,5 +402,36 @@
   },
   "tag_delete_button": {
     "message": "Delete"
+  },
+  "context_tag_rename": {
+    "message": "Rename tag…"
+  },
+  "tag_rename_title": {
+    "message": "Rename tag"
+  },
+  "tag_rename_new_name": {
+    "message": "New name"
+  },
+  "tag_rename_button": {
+    "message": "Rename"
+  },
+  "tag_rename_empty": {
+    "message": "Tag name cannot be empty."
+  },
+  "tag_rename_duplicate": {
+    "message": "A tag with this name already exists."
+  },
+  "context_tag_merge_into": {
+    "message": "Merge into…"
+  },
+  "tag_merge_title": {
+    "message": "Merge tag '$TAG$' into:",
+    "placeholders": { "tag": { "content": "$1" } }
+  },
+  "tag_merge_button": {
+    "message": "Merge"
+  },
+  "tag_merge_no_selection": {
+    "message": "Please select a target tag."
   }
 }

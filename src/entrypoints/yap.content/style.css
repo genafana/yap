@@ -559,7 +559,7 @@ dialog.yap-tag-row-ctxm::backdrop {
   padding: 6px 14px;
   cursor: pointer;
   white-space: nowrap;
-  color: #c62828;
+  color: #111;
   background: none;
   border: none;
   font: inherit;
@@ -568,5 +568,13 @@ dialog.yap-tag-row-ctxm::backdrop {
 }
 
 .yap-tag-row-ctxm__item:hover {
+  background: #f0f0f0;
+}
+
+.yap-tag-row-ctxm__item--danger {
+  color: #c62828;
+}
+
+.yap-tag-row-ctxm__item--danger:hover {
   background: #fce8e8;
 }

@@ -9,7 +9,9 @@ This repository is a cross-browser WebExtension project for YAP UI customization
 - `src/features/forum/` contains the actual forum/UI behavior: feed transformation, context menu, filtering, FBO helpers, and related DOM logic.
 - `src/utils/settings/` is the source of truth for settings schema, normalization, migration, and `browser.storage.local` persistence.
 - `public/config.json` contains bundled default settings.
-- Tags and user assignments (`TagsMap`, `UsersMap`) are stored in `browser.storage.local` and managed via the options page. There is no `groups.json` file.
+- Tags and user assignments (`TagsMap`, `UsersMap`) are stored in `browser.storage.local` and managed via the options page.
+- Legacy `groups.json` data is supported only as an import format; runtime storage remains `browser.storage.local`.
+- The system tag `Игнор` is protected (`ignore: true`, `primary: true`) and cannot be deleted, renamed, or merged away.
 - `wxt.config.ts` is the single manifest/build configuration source. Do not introduce duplicate browser-specific manifest files.
 
 # Required workflow for changes

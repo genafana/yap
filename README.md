@@ -76,9 +76,19 @@ The script installs dependencies with `npm ci`, runs the verify suite, and runs 
 
 ## Tags & Users
 
-User tags are stored in `browser.storage.local` — no external file needed.
+User tags are stored in `browser.storage.local` (`yap-lamp-tags`, `yap-lamp-users`) and managed in **Tags & Users** on the options page.
 
-Use the **Tags & Users** section on the options page to import (native format or legacy format) and export (`tags-users.json`).
+Tag behavior:
+
+- The system tag **`Игнор`** is always present, protected, and forced to `ignore: true` + `primary: true`.
+- `Игнор` cannot be deleted, renamed, or merged away; during import it is preserved.
+- Tags support a `primary` flag. The first primary tag with a color drives user highlighting.
+- Setting **Global user highlight** (`primary_tag_full_user_bg`) controls whether primary highlight paints only the user identity block or the whole left comment column.
+
+Import/export:
+
+- Import supports native format (`version: 1`) and legacy `groups.json`-style data.
+- Export writes `tags-users.json` in native format (`version: 1`, `tags`, `users`).
 
 ## Build and package
 

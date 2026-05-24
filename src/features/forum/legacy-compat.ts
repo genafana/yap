@@ -568,7 +568,7 @@ function buildUserStatus(
 
   const rankMatch = statusHtml.match(/.+•/);
   if (rankMatch != null) {
-    lines.push(rankMatch[0].replace('•', '').trim());
+    lines.push(rankMatch[0].replace('•', '').replace(/&nbsp;/g, ' ').replace(/\u00a0/g, ' ').trim());
   }
 
   if (settings.show_date_or_age === 'age') {

@@ -16,6 +16,50 @@ const CONFIRM_DIALOG_ID = 'yap-tags-confirm-dialog';
 const RENAME_DIALOG_ID = 'yap-tags-rename-dialog';
 const MERGE_DIALOG_ID = 'yap-tags-merge-dialog';
 
+// ── Shared dialog helpers ─────────────────────────────────────────────────────
+
+function createTagSwatch(bg: string | undefined): HTMLSpanElement {
+  const swatch = document.createElement('span');
+  swatch.className = 'yap-dialog__swatch';
+  if (bg != null) swatch.style.background = bg;
+  return swatch;
+}
+
+function createErrorParagraph(): HTMLParagraphElement {
+  const error = document.createElement('p');
+  error.className = 'yap-dialog__error';
+  error.style.display = 'none';
+  return error;
+}
+
+function createCancelButton(getMessage: MessageGetter, dialog: HTMLDialogElement): HTMLButtonElement {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'yap-dialog__btn yap-dialog__btn--secondary';
+  btn.textContent = getMessage('tags_dialog_cancel');
+  btn.addEventListener('click', () => {
+    dialog.close();
+    dialog.remove();
+  });
+  return btn;
+}
+
+/** Closes and removes a dialog when the user clicks outside its bounding box. */
+function attachBackdropClose(dialog: HTMLDialogElement): void {
+  dialog.addEventListener('click', (event) => {
+    const rect = dialog.getBoundingClientRect();
+    if (
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom
+    ) {
+      dialog.close();
+      dialog.remove();
+    }
+  });
+}
+
 // ── In-place DOM update helpers ───────────────────────────────────────────────
 
 /**
@@ -121,14 +165,7 @@ export function openDeleteTagConfirm(
   const footer = document.createElement('div');
   footer.className = 'yap-dialog__footer';
 
-  const cancelBtn = document.createElement('button');
-  cancelBtn.type = 'button';
-  cancelBtn.className = 'yap-dialog__btn yap-dialog__btn--secondary';
-  cancelBtn.textContent = getMessage('tags_dialog_cancel');
-  cancelBtn.addEventListener('click', () => {
-    dialog.close();
-    dialog.remove();
-  });
+  const cancelBtn = createCancelButton(getMessage, dialog);
 
   const deleteBtn = document.createElement('button');
   deleteBtn.type = 'button';
@@ -146,20 +183,8 @@ export function openDeleteTagConfirm(
   footer.append(cancelBtn, deleteBtn);
   dialog.append(msg, footer);
   document.body.append(dialog);
-  (dialog as HTMLDialogElement).showModal();
-
-  dialog.addEventListener('click', (event) => {
-    const rect = dialog.getBoundingClientRect();
-    const isOutside =
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom;
-    if (isOutside) {
-      dialog.close();
-      dialog.remove();
-    }
-  });
+  dialog.showModal();
+  attachBackdropClose(dialog);
 }
 
 /**
@@ -211,21 +236,12 @@ function openRenameTagDialog(
   input.value = tagName;
   fieldLabel.append(fieldText, input);
 
-  const error = document.createElement('p');
-  error.className = 'yap-dialog__error';
-  error.style.display = 'none';
+  const error = createErrorParagraph();
 
   const footer = document.createElement('div');
   footer.className = 'yap-dialog__footer';
 
-  const cancelBtn = document.createElement('button');
-  cancelBtn.type = 'button';
-  cancelBtn.className = 'yap-dialog__btn yap-dialog__btn--secondary';
-  cancelBtn.textContent = getMessage('tags_dialog_cancel');
-  cancelBtn.addEventListener('click', () => {
-    dialog.close();
-    dialog.remove();
-  });
+  const cancelBtn = createCancelButton(getMessage, dialog);
 
   const renameBtn = document.createElement('button');
   renameBtn.type = 'button';
@@ -264,24 +280,9 @@ function openRenameTagDialog(
   footer.append(cancelBtn, renameBtn);
   dialog.append(title, fieldLabel, error, footer);
   document.body.append(dialog);
-  (dialog as HTMLDialogElement).showModal();
-
-  requestAnimationFrame(() => {
-    input.select();
-  });
-
-  dialog.addEventListener('click', (event) => {
-    const rect = dialog.getBoundingClientRect();
-    if (
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom
-    ) {
-      dialog.close();
-      dialog.remove();
-    }
-  });
+  dialog.showModal();
+  requestAnimationFrame(() => { input.select(); });
+  attachBackdropClose(dialog);
 }
 
 // ── Merge tag dialog ──────────────────────────────────────────────────────────
@@ -317,10 +318,7 @@ function openMergeTagDialog(
     radio.value = tagName;
     radio.className = 'yap-dialog__tag-cb';
 
-    const swatch = document.createElement('span');
-    swatch.className = 'yap-dialog__swatch';
-    const bg = tagsMap[tagName]?.bgColor;
-    if (bg != null) swatch.style.background = bg;
+    const swatch = createTagSwatch(tagsMap[tagName]?.bgColor);
 
     const nameSpan = document.createElement('span');
     nameSpan.textContent = tagName;
@@ -329,21 +327,12 @@ function openMergeTagDialog(
     list.append(row);
   }
 
-  const error = document.createElement('p');
-  error.className = 'yap-dialog__error';
-  error.style.display = 'none';
+  const error = createErrorParagraph();
 
   const footer = document.createElement('div');
   footer.className = 'yap-dialog__footer';
 
-  const cancelBtn = document.createElement('button');
-  cancelBtn.type = 'button';
-  cancelBtn.className = 'yap-dialog__btn yap-dialog__btn--secondary';
-  cancelBtn.textContent = getMessage('tags_dialog_cancel');
-  cancelBtn.addEventListener('click', () => {
-    dialog.close();
-    dialog.remove();
-  });
+  const cancelBtn = createCancelButton(getMessage, dialog);
 
   const mergeBtn = document.createElement('button');
   mergeBtn.type = 'button';
@@ -383,20 +372,8 @@ function openMergeTagDialog(
   footer.append(cancelBtn, mergeBtn);
   dialog.append(title, list, error, footer);
   document.body.append(dialog);
-  (dialog as HTMLDialogElement).showModal();
-
-  dialog.addEventListener('click', (event) => {
-    const rect = dialog.getBoundingClientRect();
-    if (
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom
-    ) {
-      dialog.close();
-      dialog.remove();
-    }
-  });
+  dialog.showModal();
+  attachBackdropClose(dialog);
 }
 
 const MINI_MENU_ID = 'yap-tag-row-ctxm';
@@ -459,7 +436,7 @@ function showTagRowContextMenu(
   );
 
   document.body.append(menu);
-  (menu as HTMLDialogElement).showModal();
+  menu.showModal();
 
   menu.addEventListener('click', (e) => {
     const rect = menu.getBoundingClientRect();
@@ -527,14 +504,7 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
         cb.checked = userTagNames.has(tagName);
         cb.className = 'yap-dialog__tag-cb';
 
-        // Color swatch
-        const tagDef = tagsMap[tagName];
-        const bg = tagDef?.bgColor;
-        const swatch = document.createElement('span');
-        swatch.className = 'yap-dialog__swatch';
-        if (bg != null) {
-          swatch.style.background = bg;
-        }
+        const swatch = createTagSwatch(tagsMap[tagName]?.bgColor);
 
         const nameSpan = document.createElement('span');
         nameSpan.textContent = tagName;
@@ -546,7 +516,7 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
           showTagRowContextMenu(
             e.clientX, e.clientY, tagName,
             tagsMap,
-            dialog as HTMLDialogElement, getMessage,
+            dialog, getMessage,
             () => {
               void Promise.all([loadTags(), loadUsers()]).then(([t, u]) => {
                 tagsMap = t;
@@ -588,9 +558,7 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
     colorInput.className = 'yap-dialog__color';
     colorLabel.append(colorLabelText, colorInput);
 
-    const addError = document.createElement('p');
-    addError.className = 'yap-dialog__error';
-    addError.style.display = 'none';
+    const addError = createErrorParagraph();
 
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
@@ -623,14 +591,7 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
     const statusSpan = document.createElement('span');
     statusSpan.className = 'yap-dialog__status';
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.type = 'button';
-    cancelBtn.className = 'yap-dialog__btn yap-dialog__btn--secondary';
-    cancelBtn.textContent = getMessage('tags_dialog_cancel');
-    cancelBtn.addEventListener('click', () => {
-      dialog.close();
-      dialog.remove();
-    });
+    const cancelBtn = createCancelButton(getMessage, dialog);
 
     const saveBtn = document.createElement('button');
     saveBtn.type = 'button';
@@ -674,19 +635,6 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
   render();
 
   document.body.append(dialog);
-  (dialog as HTMLDialogElement).showModal();
-
-  // Close on backdrop click (click outside the dialog box)
-  dialog.addEventListener('click', (event) => {
-    const rect = dialog.getBoundingClientRect();
-    const isOutside =
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom;
-    if (isOutside) {
-      dialog.close();
-      dialog.remove();
-    }
-  });
+  dialog.showModal();
+  attachBackdropClose(dialog);
 }

@@ -234,7 +234,6 @@ function transformEntryTable(
     return;
   }
 
-  const postArea = getPostArea();
   const isCurrentUser = currentUserName != null && currentUserName === currentUser;
   const transformed = document.createElement('table');
   transformed.id = originalTable.id;
@@ -555,10 +554,6 @@ function transformEntryTable(
   }
 
   originalTable.replaceWith(transformed);
-
-  if (postArea == null) {
-    void postArea;
-  }
 }
 
 function buildUserStatus(
@@ -745,6 +740,11 @@ function setupResponseFormToggle(
   }
 
   const tables = document.querySelectorAll<HTMLTableElement>('table.row3');
+  const toggleButton = document.createElement('button');
+  toggleButton.id = 'toggleFBO';
+  toggleButton.type = 'button';
+  toggleButton.textContent = getMessage('fbo_hide');
+
   if (tables.length > 0) {
     const row = tables[tables.length - 1].rows[0];
     const buttonCell = row.insertCell(1);
@@ -753,23 +753,10 @@ function setupResponseFormToggle(
     if (firstCellIsEmpty) {
       buttonCell.style.width = '50%';
     }
-    const toggleButton = document.createElement('button');
-    toggleButton.id = 'toggleFBO';
-    toggleButton.type = 'button';
-    toggleButton.textContent = getMessage('fbo_hide');
     buttonCell.append(toggleButton);
   } else {
-    const toggleButton = document.createElement('button');
-    toggleButton.id = 'toggleFBO';
-    toggleButton.type = 'button';
-    toggleButton.textContent = getMessage('fbo_hide');
     toggleButton.style.margin = '10px 0';
     replier.parentNode?.insertBefore(toggleButton, replier);
-  }
-
-  const toggleButton = document.getElementById('toggleFBO');
-  if (toggleButton == null) {
-    return;
   }
 
   const updateButtonText = () => {

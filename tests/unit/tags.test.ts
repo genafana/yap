@@ -372,6 +372,16 @@ describe('renameTag', () => {
 
     await expect(renameTag('TagA', 'TagB')).rejects.toThrow();
   });
+
+  it('is a silent no-op when oldName does not exist in TagsMap', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Other: { bgColor: '#0f0' } };
+    mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Other'] } };
+
+    await renameTag('Ghost', 'GhostNew');
+
+    expect(mockStorage[TAGS_STORAGE_KEY]).toEqual({ Other: { bgColor: '#0f0' } });
+    expect((mockStorage[USERS_STORAGE_KEY] as UsersMap)['alice'].tags).toEqual(['Other']);
+  });
 });
 
 describe('mergeTag', () => {
@@ -430,5 +440,15 @@ describe('mergeTag', () => {
 
     expect(mockStorage[TAGS_STORAGE_KEY]).toEqual({ Tag: {} });
     expect((mockStorage[USERS_STORAGE_KEY] as UsersMap)['alice'].tags).toEqual(['Tag']);
+  });
+
+  it('is a silent no-op when sourceTag does not exist', async () => {
+    mockStorage[TAGS_STORAGE_KEY] = { Tgt: {} };
+    mockStorage[USERS_STORAGE_KEY] = { alice: { tags: ['Tgt'] } };
+
+    await mergeTag('Ghost', 'Tgt');
+
+    expect(mockStorage[TAGS_STORAGE_KEY]).toEqual({ Tgt: {} });
+    expect((mockStorage[USERS_STORAGE_KEY] as UsersMap)['alice'].tags).toEqual(['Tgt']);
   });
 });

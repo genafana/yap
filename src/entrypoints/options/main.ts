@@ -34,6 +34,93 @@ const tagsExportBtn = document.querySelector<HTMLButtonElement>('#tags-export-bt
 const tagsStatus = document.querySelector<HTMLElement>('#tags-status');
 
 let getMessage: MessageGetter = (messageName) => messageName;
+const settingDescriptionLinks: Partial<
+  Record<keyof ExtensionSettings, Array<{ href: string; labelMessage: string }>>
+> = {
+  left_col_width: [
+    {
+      href: 'https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Values_and_units',
+      labelMessage: 'setting_help_css_units'
+    }
+  ],
+  left_col_right_border: [
+    {
+      href: 'https://developer.mozilla.org/en-US/docs/Web/CSS/border-style',
+      labelMessage: 'setting_help_border_styles'
+    },
+    {
+      href: 'https://developer.mozilla.org/en-US/docs/Web/CSS/color_value',
+      labelMessage: 'setting_help_css_colors'
+    }
+  ],
+  hor_separate_border: [
+    {
+      href: 'https://developer.mozilla.org/en-US/docs/Web/CSS/border-style',
+      labelMessage: 'setting_help_border_styles'
+    }
+  ],
+  self_highlight_bg: [
+    {
+      href: 'https://developer.mozilla.org/en-US/docs/Web/CSS/color_value',
+      labelMessage: 'setting_help_css_colors'
+    }
+  ],
+  title_bg_color: [
+    {
+      href: 'https://developer.mozilla.org/en-US/docs/Web/CSS/color_value',
+      labelMessage: 'setting_help_css_colors'
+    }
+  ],
+  message_bg_color: [
+    {
+      href: 'https://developer.mozilla.org/en-US/docs/Web/CSS/color_value',
+      labelMessage: 'setting_help_css_colors'
+    }
+  ],
+  citate_bg_color: [
+    {
+      href: 'https://developer.mozilla.org/en-US/docs/Web/CSS/color_value',
+      labelMessage: 'setting_help_css_colors'
+    }
+  ],
+  self_highlight_border: [
+    {
+      href: 'https://developer.mozilla.org/en-US/docs/Web/CSS/border-style',
+      labelMessage: 'setting_help_border_styles'
+    }
+  ]
+};
+
+function appendDescriptionContent(
+  settingKey: keyof ExtensionSettings,
+  container: HTMLElement,
+  description: string
+): void {
+  const linkMeta = settingDescriptionLinks[settingKey] ?? [];
+  const normalizedDescription =
+    description.trim() === '' && linkMeta.length === 0 ? getMessage('options_no_description') : description;
+
+  container.textContent = normalizedDescription;
+  if (linkMeta.length === 0) {
+    return;
+  }
+
+  if (normalizedDescription.trim() !== '') {
+    container.append(' ');
+  }
+
+  linkMeta.forEach((link, index) => {
+    if (index > 0) {
+      container.append(' ');
+    }
+    const anchor = document.createElement('a');
+    anchor.href = link.href;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener noreferrer';
+    anchor.textContent = getMessage(link.labelMessage);
+    container.append(anchor);
+  });
+}
 
 function getLocalizedDefinition(key: keyof ExtensionSettings): {
   label: string;
@@ -114,7 +201,11 @@ function renderForm(settings: ExtensionSettings): void {
     valueCell.append(createInput(key, settings[key]));
 
     const descriptionCell = document.createElement('td');
-    descriptionCell.textContent = localized.description || getMessage('options_no_description');
+    appendDescriptionContent(
+      key,
+      descriptionCell,
+      localized.description
+    );
 
     row.append(nameCell, valueCell, descriptionCell);
     tableBody.append(row);

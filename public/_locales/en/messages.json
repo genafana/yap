@@ -171,19 +171,19 @@
     "message": "Left column width"
   },
   "setting_left_col_width_description": {
-    "message": "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Values_and_units\">CSS units reference</a>"
+    "message": "Size format reference:"
   },
   "setting_left_col_right_border_label": {
     "message": "Left column vertical border"
   },
   "setting_left_col_right_border_description": {
-    "message": "Format: width style color. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/border-style\">Border styles</a> <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">CSS colors</a>"
+    "message": "Format: width style color."
   },
   "setting_hor_separate_border_label": {
     "message": "Horizontal separator between posts"
   },
   "setting_hor_separate_border_description": {
-    "message": "Format: width style color. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/border-style\">Border styles</a>"
+    "message": "Format: width style color."
   },
   "setting_user_pic_size_label": {
     "message": "Avatar size in pixels"
@@ -213,13 +213,22 @@
     "message": "Own posts: left column background"
   },
   "setting_self_highlight_bg_description": {
-    "message": "Leave empty to disable background highlighting. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">CSS colors</a>"
+    "message": "Leave empty to disable background highlighting."
   },
   "setting_self_highlight_border_label": {
     "message": "Own posts: left column border"
   },
   "setting_self_highlight_border_description": {
-    "message": "Leave empty to disable the border. Format: width style color. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/border-style\">Border styles</a>"
+    "message": "Leave empty to disable the border. Format: width style color."
+  },
+  "setting_help_css_colors": {
+    "message": "CSS colors"
+  },
+  "setting_help_css_units": {
+    "message": "CSS units reference"
+  },
+  "setting_help_border_styles": {
+    "message": "Border styles"
   },
   "setting_primary_tag_full_user_bg_label": {
     "message": "Global user highlight"
@@ -231,19 +240,19 @@
     "message": "Header row and left column background color"
   },
   "setting_title_bg_color_description": {
-    "message": "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">CSS colors</a>"
+    "message": "Color reference:"
   },
   "setting_message_bg_color_label": {
     "message": "Post background color"
   },
   "setting_message_bg_color_description": {
-    "message": "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">CSS colors</a>"
+    "message": "Color reference:"
   },
   "setting_citate_bg_color_label": {
     "message": "Quote background color"
   },
   "setting_citate_bg_color_description": {
-    "message": "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">CSS colors</a>"
+    "message": "Color reference:"
   },
   "setting_msg_menu_type_label": {
     "message": "Post menu style"

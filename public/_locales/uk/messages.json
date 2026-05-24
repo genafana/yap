@@ -171,19 +171,19 @@
     "message": "Ширина лівого стовпця"
   },
   "setting_left_col_width_description": {
-    "message": "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Values_and_units\">Одиниці вимірювання в CSS</a>"
+    "message": "Довідка щодо формату розмірів:"
   },
   "setting_left_col_right_border_label": {
     "message": "Вертикальна межа лівого стовпця"
   },
   "setting_left_col_right_border_description": {
-    "message": "Формат: товщина стиль колір. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/border-style\">Стилі меж</a> <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">Кольори CSS</a>"
+    "message": "Формат: товщина стиль колір."
   },
   "setting_hor_separate_border_label": {
     "message": "Горизонтальна лінія-роздільник повідомлень"
   },
   "setting_hor_separate_border_description": {
-    "message": "Формат: товщина стиль колір. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/border-style\">Стилі меж</a>"
+    "message": "Формат: товщина стиль колір."
   },
   "setting_user_pic_size_label": {
     "message": "Розмір аватарки в пікселях"
@@ -213,13 +213,22 @@
     "message": "Тло лівого стовпця у власних повідомленнях"
   },
   "setting_self_highlight_bg_description": {
-    "message": "Залиште порожнім, щоб вимкнути підсвічування тла. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">Кольори CSS</a>"
+    "message": "Залиште порожнім, щоб вимкнути підсвічування тла."
   },
   "setting_self_highlight_border_label": {
     "message": "Межа лівого стовпця у власних повідомленнях"
   },
   "setting_self_highlight_border_description": {
-    "message": "Залиште порожнім, щоб вимкнути межу. Формат: товщина стиль колір. <a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/border-style\">Стилі меж</a>"
+    "message": "Залиште порожнім, щоб вимкнути межу. Формат: товщина стиль колір."
+  },
+  "setting_help_css_colors": {
+    "message": "Кольори CSS"
+  },
+  "setting_help_css_units": {
+    "message": "Одиниці вимірювання в CSS"
+  },
+  "setting_help_border_styles": {
+    "message": "Стилі меж"
   },
   "setting_primary_tag_full_user_bg_label": {
     "message": "Загальне підсвічування користувача"
@@ -231,19 +240,19 @@
     "message": "Колір тла рядка заголовка та лівого стовпця"
   },
   "setting_title_bg_color_description": {
-    "message": "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">Кольори CSS</a>"
+    "message": "Довідка щодо кольорів:"
   },
   "setting_message_bg_color_label": {
     "message": "Колір тла повідомлення"
   },
   "setting_message_bg_color_description": {
-    "message": "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">Кольори CSS</a>"
+    "message": "Довідка щодо кольорів:"
   },
   "setting_citate_bg_color_label": {
     "message": "Колір тла цитати"
   },
   "setting_citate_bg_color_description": {
-    "message": "<a target=\"_blank\" rel=\"noopener noreferrer\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS/color_value\">Кольори CSS</a>"
+    "message": "Довідка щодо кольорів:"
   },
   "setting_msg_menu_type_label": {
     "message": "Тип меню в повідомленнях"

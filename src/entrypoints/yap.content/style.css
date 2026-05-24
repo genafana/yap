@@ -425,18 +425,8 @@ dialog.yap-dialog::backdrop {
   font-style: italic;
 }
 
-.yap-dialog__new-tag {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: .5em .7em;
-  margin-bottom: .8em;
-}
-
-.yap-dialog__new-tag > summary {
-  cursor: pointer;
-  font-weight: 500;
-  color: #333;
-  user-select: none;
+.yap-dialog__new-tag-btn {
+  margin: .4em 0 .6em;
 }
 
 .yap-dialog__field {

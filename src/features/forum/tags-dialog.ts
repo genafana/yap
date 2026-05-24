@@ -13,7 +13,7 @@ import { getContrastColor } from '../../utils/color';
 
 const DIALOG_ID = 'yap-tags-dialog';
 const CONFIRM_DIALOG_ID = 'yap-tags-confirm-dialog';
-const RENAME_DIALOG_ID = 'yap-tags-rename-dialog';
+const EDIT_DIALOG_ID = 'yap-tags-edit-dialog';
 const MERGE_DIALOG_ID = 'yap-tags-merge-dialog';
 
 // ── Shared dialog helpers ─────────────────────────────────────────────────────
@@ -209,32 +209,50 @@ function renameTagInDOM(oldName: string, newName: string, tagsMap: TagsMap): voi
   }
 }
 
-// ── Rename tag dialog ─────────────────────────────────────────────────────────
+// ── Edit / New tag dialog ─────────────────────────────────────────────────────
 
-function openRenameTagDialog(
-  tagName: string,
+/**
+ * Unified dialog for creating a new tag (tagName === null) or editing an
+ * existing one. Supports renaming and changing the background colour.
+ */
+function openEditTagDialog(
+  tagName: string | null,
+  tagsMap: TagsMap,
   getMessage: MessageGetter,
   onChanged?: () => void
 ): void {
-  document.getElementById(RENAME_DIALOG_ID)?.remove();
+  document.getElementById(EDIT_DIALOG_ID)?.remove();
+
+  const isNew = tagName == null;
+  const currentBgColor = tagName != null ? (tagsMap[tagName]?.bgColor ?? '#e0e0e0') : '#e0e0e0';
 
   const dialog = document.createElement('dialog');
-  dialog.id = RENAME_DIALOG_ID;
+  dialog.id = EDIT_DIALOG_ID;
   dialog.className = 'yap-dialog yap-dialog--confirm';
 
   const title = document.createElement('h3');
   title.className = 'yap-dialog__title';
-  title.textContent = getMessage('tag_rename_title');
+  title.textContent = isNew ? getMessage('tag_edit_new_title') : getMessage('tag_rename_title');
 
-  const fieldLabel = document.createElement('label');
-  fieldLabel.className = 'yap-dialog__field';
-  const fieldText = document.createElement('span');
-  fieldText.textContent = getMessage('tag_rename_new_name');
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'yap-dialog__input';
-  input.value = tagName;
-  fieldLabel.append(fieldText, input);
+  const nameLabel = document.createElement('label');
+  nameLabel.className = 'yap-dialog__field';
+  const nameLabelText = document.createElement('span');
+  nameLabelText.textContent = getMessage('tags_new_tag_name');
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'yap-dialog__input';
+  nameInput.value = tagName ?? '';
+  nameLabel.append(nameLabelText, nameInput);
+
+  const colorLabel = document.createElement('label');
+  colorLabel.className = 'yap-dialog__field';
+  const colorLabelText = document.createElement('span');
+  colorLabelText.textContent = getMessage('tags_new_tag_color');
+  const colorInput = document.createElement('input');
+  colorInput.type = 'color';
+  colorInput.value = currentBgColor;
+  colorInput.className = 'yap-dialog__color';
+  colorLabel.append(colorLabelText, colorInput);
 
   const error = createErrorParagraph();
 
@@ -243,45 +261,53 @@ function openRenameTagDialog(
 
   const cancelBtn = createCancelButton(getMessage, dialog);
 
-  const renameBtn = document.createElement('button');
-  renameBtn.type = 'button';
-  renameBtn.className = 'yap-dialog__btn yap-dialog__btn--primary';
-  renameBtn.textContent = getMessage('tag_rename_button');
-  renameBtn.addEventListener('click', () => {
-    const newName = input.value.trim();
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'yap-dialog__btn yap-dialog__btn--primary';
+  saveBtn.textContent = getMessage('tag_rename_button');
+  saveBtn.addEventListener('click', () => {
+    const newName = nameInput.value.trim();
     if (newName === '') {
       error.textContent = getMessage('tag_rename_empty');
       error.style.display = '';
       return;
     }
-    if (newName === tagName) {
-      dialog.close();
-      dialog.remove();
+
+    const isRename = !isNew && newName !== tagName;
+    if ((isNew || isRename) && newName in tagsMap) {
+      error.textContent = getMessage('tag_rename_duplicate');
+      error.style.display = '';
       return;
     }
+
     error.style.display = 'none';
-    void renameTag(tagName, newName).then(async () => {
-      const newTagsMap = await loadTags();
-      renameTagInDOM(tagName, newName, newTagsMap);
+    void (async () => {
+      if (isRename) {
+        await renameTag(tagName!, newName);
+      }
+      const current = await loadTags();
+      current[newName] = { ...(current[newName] ?? {}), bgColor: colorInput.value };
+      await saveTags(current);
+      if (!isNew) {
+        const newTagsMap = await loadTags();
+        renameTagInDOM(tagName!, newName, newTagsMap);
+      }
       dialog.close();
       dialog.remove();
       onChanged?.();
-    }).catch(() => {
-      error.textContent = getMessage('tag_rename_duplicate');
-      error.style.display = '';
-    });
+    })();
   });
 
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') renameBtn.click();
+  nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveBtn.click();
     if (e.key === 'Escape') cancelBtn.click();
   });
 
-  footer.append(cancelBtn, renameBtn);
-  dialog.append(title, fieldLabel, error, footer);
+  footer.append(cancelBtn, saveBtn);
+  dialog.append(title, nameLabel, colorLabel, error, footer);
   document.body.append(dialog);
   dialog.showModal();
-  requestAnimationFrame(() => { input.select(); });
+  requestAnimationFrame(() => { nameInput.select(); });
   attachBackdropClose(dialog);
 }
 
@@ -425,7 +451,7 @@ function showTagRowContextMenu(
 
   menu.append(
     makeItem(getMessage('context_tag_rename'), false, () => {
-      openRenameTagDialog(tagName, getMessage, onChanged);
+      openEditTagDialog(tagName, tagsMap, getMessage, onChanged);
     }),
     makeItem(getMessage('context_tag_merge_into'), false, () => {
       openMergeTagDialog(tagName, tagsMap, getMessage, onChanged);
@@ -531,58 +557,21 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
     }
     dialog.append(checkboxSection);
 
-    // New-tag form
-    const newTagSection = document.createElement('details');
-    newTagSection.className = 'yap-dialog__new-tag';
-    const summary = document.createElement('summary');
-    summary.textContent = getMessage('tags_new_tag_heading');
-    newTagSection.append(summary);
-
-    const nameLabel = document.createElement('label');
-    nameLabel.className = 'yap-dialog__field';
-    const nameLabelText = document.createElement('span');
-    nameLabelText.textContent = getMessage('tags_new_tag_name');
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.className = 'yap-dialog__input';
-    nameInput.placeholder = getMessage('tags_new_tag_name');
-    nameLabel.append(nameLabelText, nameInput);
-
-    const colorLabel = document.createElement('label');
-    colorLabel.className = 'yap-dialog__field';
-    const colorLabelText = document.createElement('span');
-    colorLabelText.textContent = getMessage('tags_new_tag_color');
-    const colorInput = document.createElement('input');
-    colorInput.type = 'color';
-    colorInput.value = '#e0e0e0';
-    colorInput.className = 'yap-dialog__color';
-    colorLabel.append(colorLabelText, colorInput);
-
-    const addError = createErrorParagraph();
-
-    const addBtn = document.createElement('button');
-    addBtn.type = 'button';
-    addBtn.className = 'yap-dialog__btn yap-dialog__btn--secondary';
-    addBtn.textContent = getMessage('tags_new_tag_add');
-    addBtn.addEventListener('click', async () => {
-      const newName = nameInput.value.trim();
-      if (newName === '') {
-        addError.textContent = getMessage('tags_new_tag_name_empty');
-        addError.style.display = '';
-        return;
-      }
-      addError.style.display = 'none';
-
-      // Persist the new tag definition
-      tagsMap = { ...tagsMap, [newName]: { bgColor: colorInput.value } };
-      await saveTags(tagsMap);
-
-      // Re-render the whole dialog so the new checkbox appears
-      render();
+    // New tag button
+    const newTagBtn = document.createElement('button');
+    newTagBtn.type = 'button';
+    newTagBtn.className = 'yap-dialog__btn yap-dialog__btn--secondary yap-dialog__new-tag-btn';
+    newTagBtn.textContent = getMessage('tags_dialog_new_tag_btn');
+    newTagBtn.addEventListener('click', () => {
+      openEditTagDialog(null, tagsMap, getMessage, () => {
+        void Promise.all([loadTags(), loadUsers()]).then(([t, u]) => {
+          tagsMap = t;
+          usersMap = u;
+          render();
+        });
+      });
     });
-
-    newTagSection.append(nameLabel, colorLabel, addError, addBtn);
-    dialog.append(newTagSection);
+    dialog.append(newTagBtn);
 
     // Footer buttons
     const footer = document.createElement('div');

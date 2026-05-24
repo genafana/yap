@@ -364,7 +364,11 @@
   },
   "tags_dialog_title": {
     "message": "Tags for $USER$",
-    "placeholders": { "user": { "content": "$1" } }
+    "placeholders": {
+      "user": {
+        "content": "$1"
+      }
+    }
   },
   "tags_dialog_no_tags": {
     "message": "No tags defined yet."
@@ -375,20 +379,11 @@
   "tags_dialog_cancel": {
     "message": "Cancel"
   },
-  "tags_new_tag_heading": {
-    "message": "New tag"
-  },
   "tags_new_tag_name": {
     "message": "Name"
   },
   "tags_new_tag_color": {
     "message": "Background color"
-  },
-  "tags_new_tag_add": {
-    "message": "Add tag"
-  },
-  "tags_new_tag_name_empty": {
-    "message": "Tag name cannot be empty."
   },
   "tags_dialog_saved": {
     "message": "Saved."
@@ -398,22 +393,23 @@
   },
   "tag_delete_confirm": {
     "message": "Delete tag '$TAG$' and remove it from all users?",
-    "placeholders": { "tag": { "content": "$1" } }
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   },
   "tag_delete_button": {
     "message": "Delete"
   },
   "context_tag_rename": {
-    "message": "Rename tag…"
+    "message": "Edit tag…"
   },
   "tag_rename_title": {
-    "message": "Rename tag"
-  },
-  "tag_rename_new_name": {
-    "message": "New name"
+    "message": "Edit tag"
   },
   "tag_rename_button": {
-    "message": "Rename"
+    "message": "Save"
   },
   "tag_rename_empty": {
     "message": "Tag name cannot be empty."
@@ -426,12 +422,22 @@
   },
   "tag_merge_title": {
     "message": "Merge tag '$TAG$' into:",
-    "placeholders": { "tag": { "content": "$1" } }
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   },
   "tag_merge_button": {
     "message": "Merge"
   },
   "tag_merge_no_selection": {
     "message": "Please select a target tag."
+  },
+  "tag_edit_new_title": {
+    "message": "New tag"
+  },
+  "tags_dialog_new_tag_btn": {
+    "message": "New tag"
   }
 }

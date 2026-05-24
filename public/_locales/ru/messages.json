@@ -364,7 +364,11 @@
   },
   "tags_dialog_title": {
     "message": "Теги для $USER$",
-    "placeholders": { "user": { "content": "$1" } }
+    "placeholders": {
+      "user": {
+        "content": "$1"
+      }
+    }
   },
   "tags_dialog_no_tags": {
     "message": "Теги ещё не определены."
@@ -375,20 +379,11 @@
   "tags_dialog_cancel": {
     "message": "Отмена"
   },
-  "tags_new_tag_heading": {
-    "message": "Новый тег"
-  },
   "tags_new_tag_name": {
     "message": "Название"
   },
   "tags_new_tag_color": {
     "message": "Цвет фона"
-  },
-  "tags_new_tag_add": {
-    "message": "Добавить тег"
-  },
-  "tags_new_tag_name_empty": {
-    "message": "Название тега не может быть пустым."
   },
   "tags_dialog_saved": {
     "message": "Сохранено."
@@ -398,22 +393,23 @@
   },
   "tag_delete_confirm": {
     "message": "Удалить тег '$TAG$' и убрать его у всех пользователей?",
-    "placeholders": { "tag": { "content": "$1" } }
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   },
   "tag_delete_button": {
     "message": "Удалить"
   },
   "context_tag_rename": {
-    "message": "Переименовать тег…"
+    "message": "Изменить тег…"
   },
   "tag_rename_title": {
-    "message": "Переименовать тег"
-  },
-  "tag_rename_new_name": {
-    "message": "Новое имя"
+    "message": "Изменить тег"
   },
   "tag_rename_button": {
-    "message": "Переименовать"
+    "message": "Сохранить"
   },
   "tag_rename_empty": {
     "message": "Название тега не может быть пустым."
@@ -426,12 +422,22 @@
   },
   "tag_merge_title": {
     "message": "Влить тег '$TAG$' в:",
-    "placeholders": { "tag": { "content": "$1" } }
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   },
   "tag_merge_button": {
     "message": "Влить"
   },
   "tag_merge_no_selection": {
     "message": "Выберите тег назначения."
+  },
+  "tag_edit_new_title": {
+    "message": "Новый тег"
+  },
+  "tags_dialog_new_tag_btn": {
+    "message": "Новый тег"
   }
 }

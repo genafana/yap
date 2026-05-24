@@ -388,6 +388,15 @@
   "tags_dialog_no_tags": {
     "message": "No tags defined yet."
   },
+  "tags_dialog_filter_label": {
+    "message": "Filter tags"
+  },
+  "tags_dialog_filter_placeholder": {
+    "message": "Type to filter..."
+  },
+  "tags_dialog_no_filter_matches": {
+    "message": "No matching tags."
+  },
   "tags_dialog_save": {
     "message": "Save"
   },

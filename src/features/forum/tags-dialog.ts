@@ -1,7 +1,9 @@
 import type { MessageGetter } from '../../utils/i18n';
+import { getSettingsDocument } from '../../utils/settings/storage';
 import {
   deleteTag,
   ensureIgnoreTag,
+  findPrimaryTagBgColor,
   IGNORE_TAG_NAME,
   loadTags,
   loadUsers,
@@ -118,6 +120,56 @@ function refreshTagPillsInDOM(
     }
 
     userWrapper.append(container);
+  }
+}
+
+/**
+ * Applies/removes live primary-tag background highlighting for all transformed
+ * comment tables that belong to the given username.
+ */
+function refreshPrimaryHighlightInDOM(
+  username: string,
+  tagsMap: TagsMap,
+  selectedTagNames: string[],
+  useFullColumnHighlight: boolean
+): void {
+  const primaryBgColor = findPrimaryTagBgColor(selectedTagNames, tagsMap);
+  const tables = document.querySelectorAll<HTMLElement>('[data-nik-name]');
+
+  for (const table of tables) {
+    if (table.dataset.nikName !== username) continue;
+
+    const leftCell = table.querySelector<HTMLElement>('.entry-column1');
+    if (leftCell == null) continue;
+
+    const titleRow = leftCell.closest<HTMLTableRowElement>('tr.title-msg-row');
+    const baseLeftBg = titleRow?.style.background ?? '';
+    const userWrapper = leftCell.firstElementChild as HTMLElement | null;
+    const identityContainer = userWrapper?.firstElementChild as HTMLElement | null;
+
+    if (primaryBgColor == null) {
+      leftCell.style.background = baseLeftBg;
+      if (identityContainer != null) {
+        identityContainer.style.background = '';
+        identityContainer.style.padding = '';
+      }
+      continue;
+    }
+
+    if (useFullColumnHighlight) {
+      leftCell.style.background = primaryBgColor;
+      if (identityContainer != null) {
+        identityContainer.style.background = '';
+        identityContainer.style.padding = '';
+      }
+      continue;
+    }
+
+    leftCell.style.background = baseLeftBg;
+    if (identityContainer != null) {
+      identityContainer.style.background = primaryBgColor;
+      identityContainer.style.padding = '0.25em';
+    }
   }
 }
 
@@ -401,9 +453,19 @@ function openMergeTagDialog(
 
       await mergeTag(sourceTag, targetTag);
 
-      const [newTagsMap, newUsersMap] = await Promise.all([loadTags(), loadUsers()]);
+      const [{ settings }, newTagsMap, newUsersMap] = await Promise.all([
+        getSettingsDocument(),
+        loadTags(),
+        loadUsers()
+      ]);
       for (const username of affectedUsers) {
         refreshTagPillsInDOM(username, newTagsMap, newUsersMap[username]?.tags ?? []);
+        refreshPrimaryHighlightInDOM(
+          username,
+          newTagsMap,
+          newUsersMap[username]?.tags ?? [],
+          settings.primary_tag_full_user_bg
+        );
       }
       // Remove any remaining sourceTag pills (safety: no user should have them now)
       deleteTagFromDOM(sourceTag);
@@ -632,6 +694,13 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
 
       // Update pills in-place for all matching tables
       refreshTagPillsInDOM(username, tagsMap, selected);
+      const { settings } = await getSettingsDocument();
+      refreshPrimaryHighlightInDOM(
+        username,
+        tagsMap,
+        selected,
+        settings.primary_tag_full_user_bg
+      );
 
       statusSpan.textContent = getMessage('tags_dialog_saved');
       setTimeout(() => {

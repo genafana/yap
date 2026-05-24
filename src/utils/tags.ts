@@ -132,6 +132,24 @@ export function buildUserTagsLookup(tags: TagsMap, users: UsersMap): UserTagsLoo
   return lookup;
 }
 
+/**
+ * Resolves the first primary tag with a color from an ordered tag-name list.
+ * Missing tag definitions are treated as primary for backward compatibility.
+ */
+export function findPrimaryTagBgColor(
+  orderedTagNames: string[],
+  tags: TagsMap
+): string | undefined {
+  for (const tagName of orderedTagNames) {
+    const tagDef = tags[tagName];
+    const isPrimary = tagDef == null || tagDef.primary !== false;
+    if (isPrimary && tagDef?.bgColor != null) {
+      return tagDef.bgColor;
+    }
+  }
+  return undefined;
+}
+
 export async function loadUserTagsLookup(): Promise<UserTagsLookup> {
   try {
     const [tags, users] = await Promise.all([loadTags(), loadUsers()]);

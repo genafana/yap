@@ -21,6 +21,7 @@ import {
   convertLegacyFormat,
   detectImportFormat,
   ensureIgnoreTag,
+  findPrimaryTagBgColor,
   normalizeLegacyUsers,
   parseImport,
   importTagsData,
@@ -139,6 +140,33 @@ describe('buildUserTagsLookup', () => {
       { name: 'Ignore', ignore: true, primary: true }
     ]);
     expect(lookup['spam-user']).toEqual([{ name: 'Ignore', ignore: true, primary: true }]);
+  });
+
+  describe('findPrimaryTagBgColor', () => {
+    it('returns the first primary tag color in user tag order', () => {
+      const tags: TagsMap = {
+        A: { bgColor: '#111', primary: false },
+        B: { bgColor: '#222', primary: true },
+        C: { bgColor: '#333', primary: true }
+      };
+      expect(findPrimaryTagBgColor(['A', 'B', 'C'], tags)).toBe('#222');
+    });
+
+    it('treats missing primary as true and missing tag defs as primary', () => {
+      const tags: TagsMap = {
+        X: { bgColor: '#abc' },
+        Y: { primary: false, bgColor: '#def' }
+      };
+      expect(findPrimaryTagBgColor(['Y', 'Z', 'X'], tags)).toBe('#abc');
+    });
+
+    it('returns undefined when no primary colored tags exist', () => {
+      const tags: TagsMap = {
+        A: { primary: false, bgColor: '#111' },
+        B: { primary: false }
+      };
+      expect(findPrimaryTagBgColor(['A', 'B'], tags)).toBeUndefined();
+    });
   });
 
   it('handles tags not found in TagsMap gracefully (treated as primary)', () => {

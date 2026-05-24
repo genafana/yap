@@ -6,6 +6,7 @@ import {
   importTagsData,
   parseImport
 } from '../../utils/tags';
+import { parseLooseJson } from '../../utils/loose-json';
 import { localizeDocument, type MessageGetter } from '../../utils/i18n';
 import { resolveSelectOptionLabel } from './select-labels';
 import {
@@ -218,7 +219,7 @@ async function handleTagsImportFile(file: File): Promise<void> {
   const text = await file.text();
   let parsed: unknown;
   try {
-    parsed = JSON.parse(text);
+    parsed = parseLooseJson(text);
   } catch {
     showTagsStatus(getMessage('tags_import_error'));
     return;

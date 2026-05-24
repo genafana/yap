@@ -30,6 +30,7 @@ import {
   TAGS_STORAGE_KEY,
   USERS_STORAGE_KEY
 } from '../../src/utils/tags';
+import { parseLooseJson } from '../../src/utils/loose-json';
 
 describe('normalizeLegacyUsers', () => {
   it('splits whitespace-delimited strings', () => {
@@ -79,6 +80,36 @@ describe('convertLegacyFormat', () => {
     const raw: LegacyTagsJson = { Silent: { users: ['user1'] } };
     const { tags } = convertLegacyFormat(raw);
     expect(tags['Silent']).toEqual({});
+  });
+
+  it('splits space-separated string users', () => {
+    const raw: LegacyTagsJson = { Разрабы: { color: 'Khaki', users: 'Dmitry1971 DimiDron' } };
+    const { tags, users } = convertLegacyFormat(raw);
+    expect(tags['Разрабы']).toEqual({ bgColor: 'Khaki' });
+    expect(users['Dmitry1971']).toEqual({ tags: ['Разрабы'] });
+    expect(users['DimiDron']).toEqual({ tags: ['Разрабы'] });
+  });
+
+  it('sets ignore flag and no bgColor for ignore-only groups', () => {
+    const raw: LegacyTagsJson = { Игнор: { ignore: true, users: 'Ник1 Ник2 Ник3' } };
+    const { tags, users } = convertLegacyFormat(raw);
+    expect(tags['Игнор']).toEqual({ ignore: true });
+    expect(Object.keys(users)).toHaveLength(3);
+    expect(users['Ник1']).toEqual({ tags: ['Игнор'] });
+  });
+
+  it('handles adjacent-string-literal users via parseLooseJson pipeline', () => {
+    // Simulates the real orig format where long user lists span multiple JSON strings
+    const looseText = `{
+      "Наши": { "color": "Lime", "users": "alice bob "
+                                           "charlie dave" }
+    }`;
+    const parsed = parseLooseJson<LegacyTagsJson>(looseText);
+    const { tags, users } = convertLegacyFormat(parsed);
+    expect(tags['Наши']).toEqual({ bgColor: 'Lime' });
+    expect(users['alice']).toEqual({ tags: ['Наши'] });
+    expect(users['charlie']).toEqual({ tags: ['Наши'] });
+    expect(users['dave']).toEqual({ tags: ['Наши'] });
   });
 });
 
@@ -155,6 +186,21 @@ describe('parseImport', () => {
     const result = parseImport(legacy);
     expect(result?.tags['Devs']).toEqual({ bgColor: 'Khaki' });
     expect(result?.users['alice']).toEqual({ tags: ['Devs'] });
+  });
+
+  it('converts legacy format with space-separated string users', () => {
+    const legacy = { Разрабы: { color: 'Khaki', users: 'Dmitry1971 DimiDron' } };
+    const result = parseImport(legacy);
+    expect(result?.tags['Разрабы']).toEqual({ bgColor: 'Khaki' });
+    expect(result?.users['Dmitry1971']).toEqual({ tags: ['Разрабы'] });
+    expect(result?.users['DimiDron']).toEqual({ tags: ['Разрабы'] });
+  });
+
+  it('converts legacy format with ignore group', () => {
+    const legacy = { Игнор: { ignore: true, users: 'Ник1 Ник2 Ник3' } };
+    const result = parseImport(legacy);
+    expect(result?.tags['Игнор']).toEqual({ ignore: true });
+    expect(result?.users['Ник1']).toEqual({ tags: ['Игнор'] });
   });
 
   it('returns null for unknown format', () => {

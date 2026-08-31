@@ -388,6 +388,15 @@
   "tags_dialog_no_tags": {
     "message": "Теги ще не визначені."
   },
+  "tags_dialog_filter_label": {
+    "message": "Фільтр тегів"
+  },
+  "tags_dialog_filter_placeholder": {
+    "message": "Введіть для фільтрації..."
+  },
+  "tags_dialog_no_filter_matches": {
+    "message": "Відповідних тегів не знайдено."
+  },
   "tags_dialog_save": {
     "message": "Зберегти"
   },

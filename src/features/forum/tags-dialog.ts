@@ -14,6 +14,7 @@ import {
   type TagsMap
 } from '../../utils/tags';
 import { getContrastColor } from '../../utils/color';
+import { matchesTagFilter } from './tag-filter';
 
 const DIALOG_ID = 'yap-tags-dialog';
 const CONFIRM_DIALOG_ID = 'yap-tags-confirm-dialog';
@@ -120,6 +121,36 @@ function refreshTagPillsInDOM(
     }
 
     userWrapper.append(container);
+  }
+}
+
+function applyTagFilter(
+  checkboxSection: HTMLElement,
+  filterQuery: string,
+  getMessage: MessageGetter
+): void {
+  const rows = checkboxSection.querySelectorAll<HTMLElement>('.yap-dialog__tag-row');
+  let visibleRowsCount = 0;
+
+  for (const row of rows) {
+    const tagName = row.dataset.tagName ?? '';
+    const isVisible = matchesTagFilter(tagName, filterQuery);
+    row.style.display = isVisible ? '' : 'none';
+    if (isVisible) {
+      visibleRowsCount += 1;
+    }
+  }
+
+  const existingNoMatches = checkboxSection.querySelector<HTMLElement>('.yap-dialog__filter-empty');
+  if (visibleRowsCount === 0 && rows.length > 0) {
+    if (existingNoMatches == null) {
+      const noMatches = document.createElement('p');
+      noMatches.className = 'yap-dialog__empty yap-dialog__filter-empty';
+      noMatches.textContent = getMessage('tags_dialog_no_filter_matches');
+      checkboxSection.append(noMatches);
+    }
+  } else {
+    existingNoMatches?.remove();
   }
 }
 
@@ -578,6 +609,7 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
   await ensureIgnoreTag();
   let tagsMap = await loadTags();
   let usersMap = await loadUsers();
+  let tagFilterQuery = '';
 
   const dialog = document.createElement('dialog');
   dialog.id = DIALOG_ID;
@@ -591,6 +623,24 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
     title.className = 'yap-dialog__title';
     title.textContent = getMessage('tags_dialog_title', username);
     dialog.append(title);
+
+    const filterField = document.createElement('label');
+    filterField.className = 'yap-dialog__field';
+
+    const filterLabel = document.createElement('span');
+    filterLabel.textContent = getMessage('tags_dialog_filter_label');
+
+    const filterInput = document.createElement('input');
+    filterInput.type = 'text';
+    filterInput.className = 'yap-dialog__input';
+    filterInput.placeholder = getMessage('tags_dialog_filter_placeholder');
+    filterInput.value = tagFilterQuery;
+    filterInput.addEventListener('input', () => {
+      tagFilterQuery = filterInput.value;
+      applyTagFilter(checkboxSection, tagFilterQuery, getMessage);
+    });
+    filterField.append(filterLabel, filterInput);
+    dialog.append(filterField);
 
     // Tag checkboxes
     const tagNames = Object.keys(tagsMap);
@@ -639,6 +689,7 @@ async function buildAndShowDialog(username: string, getMessage: MessageGetter): 
         });
         checkboxSection.append(row);
       }
+      applyTagFilter(checkboxSection, tagFilterQuery, getMessage);
     }
     dialog.append(checkboxSection);
 

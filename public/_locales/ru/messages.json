@@ -388,6 +388,15 @@
   "tags_dialog_no_tags": {
     "message": "Теги ещё не определены."
   },
+  "tags_dialog_filter_label": {
+    "message": "Фильтр тегов"
+  },
+  "tags_dialog_filter_placeholder": {
+    "message": "Введите для фильтрации..."
+  },
+  "tags_dialog_no_filter_matches": {
+    "message": "Совпадающие теги не найдены."
+  },
   "tags_dialog_save": {
     "message": "Сохранить"
   },

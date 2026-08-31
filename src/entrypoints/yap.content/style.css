@@ -138,6 +138,10 @@ div.user-wrapper {
   background-image: url(https://www.yaplakal.com/html/static/icon-edit.svg) !important;
 }
 
+.scroll-top-btn {
+  display: none !important;
+}
+
 #scrollTop {
   width: 4em !important;
   text-align: center !important;

@@ -1126,7 +1126,9 @@ function setBetterCopyMessageLink(getMessage: MessageGetter): void {
           anchor;
         event.preventDefault();
         event.stopImmediatePropagation();
-        void navigator.clipboard.writeText(currentTarget.href);
+        const userName = currentTarget.closest<HTMLElement>('[data-nik-name]')?.dataset.nikName;
+        const text = userName != null ? `${userName} - ${currentTarget.href}` : currentTarget.href;
+        void navigator.clipboard.writeText(text);
         showToastMessage(getMessage('toast_link_copied'));
       },
       true
